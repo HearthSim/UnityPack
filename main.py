@@ -9,6 +9,9 @@ from io import BytesIO
 SIGNATURE_WEB = "UnityWeb"
 SIGNATURE_RAW = "UnityRaw"
 
+with open(os.path.join(os.path.dirname(__file__), "strings.dat"), "rb") as f:
+	STRINGS_DAT = f.read()
+
 
 class UnityClass(IntEnum):
 	TextAsset = 49
@@ -62,12 +65,63 @@ class BinaryReader:
 
 
 class TypeTree:
+	NULL = "(null)"
+
+	def __init__(self):
+		self.children = []
+
 	def load_blob(self, buf):
-		self.nodes = buf.read_uint()
+		self.num_nodes = buf.read_uint()
 		self.buffer_bytes = buf.read_uint()
-		node_data = BytesIO(buf.read(24 * self.nodes))
-		local_buffer = BytesIO(buf.read(self.buffer_bytes))
-		# todo the rest...
+		node_data = BytesIO(buf.read(24 * self.num_nodes))
+		self.data = buf.read(self.buffer_bytes)
+
+		parents = [self]
+
+		buf = BinaryReader(node_data)
+
+		for i in range(self.num_nodes):
+			version = buf.read_int16()
+			depth = buf.read_byte()
+			is_array = buf.read_byte()
+			type_offset = buf.read_int()
+			name_offset = buf.read_int()
+			size = buf.read_uint()
+			index = buf.read_uint()
+			flags = buf.read_int()
+			type = self.NULL
+			name = self.NULL
+
+			type = self.get_string(type_offset)
+			name = self.get_string(name_offset)
+
+			if depth == 0:
+				curr = self
+			else:
+				while len(parents) > depth:
+					parents.pop()
+				curr = TypeTree()
+				parents[0].children.append(curr)
+				parents.append(curr)
+
+			curr.type = type
+			curr.name = name
+			curr.size = size
+			curr.index = index
+			curr.is_array = is_array
+			curr.version = version
+			curr.flags = flags
+
+	def get_string(self, offset):
+		if offset < 0:
+			offset &= 0x7fffffff
+			data = STRINGS_DAT
+		elif offset < self.buffer_bytes:
+			data = self.data
+		else:
+			return self.NULL
+		return data[offset:].partition(b"\0")[0].decode("utf-8")
+
 
 
 class TypeMetadata:
@@ -99,6 +153,7 @@ class TypeMetadata:
 				tree = TypeTree()
 				tree.load_blob(buf)
 				self.type_trees[class_id] = tree
+				self.type_trees
 
 
 class ObjectInfo:
