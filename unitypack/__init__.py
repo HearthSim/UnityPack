@@ -1,7 +1,7 @@
 import os
+import json
 from io import BytesIO
 from .utils import BinaryReader
-from .enums import UnityClass
 
 
 SIGNATURE_WEB = "UnityWeb"
@@ -9,6 +9,14 @@ SIGNATURE_RAW = "UnityRaw"
 
 with open(os.path.join(os.path.dirname(__file__), "strings.dat"), "rb") as f:
 	STRINGS_DAT = f.read()
+
+
+with open(os.path.join(os.path.dirname(__file__), "classes.json"), "r") as f:
+	UNITY_CLASSES = json.load(f)
+
+
+def UnityClass(i):
+	return UNITY_CLASSES[str(i)]
 
 
 class TypeTree:
@@ -98,7 +106,7 @@ class TypeMetadata:
 			if self.has_type_trees:
 				tree = TypeTree()
 				tree.load_blob(buf)
-				self.type_trees[class_id] = tree
+				self.type_trees[UnityClass(class_id)] = tree
 				self.type_trees
 
 
@@ -107,7 +115,7 @@ class ObjectInfo:
 		self.parent = parent
 
 	def __repr__(self):
-		return "<%s %i>" % (self.type.name, self.class_id)
+		return "<%s %i>" % (self.type, self.class_id)
 
 	def bytes(self):
 		self.parent.data.seek(self.parent.data_offset + self.data_offset)
