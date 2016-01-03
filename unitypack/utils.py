@@ -16,7 +16,20 @@ class BinaryReader:
 	def read(self, *args):
 		return self.buf.read(*args)
 
-	def read_string(self, encoding="utf-8"):
+	def seek(self, *args):
+		return self.buf.seek(*args)
+
+	def tell(self):
+		return self.buf.tell()
+
+	def read_string(self, size=None, encoding="utf-8"):
+		if size is None:
+			ret = self.read_cstring()
+		else:
+			ret = struct.unpack(self.endian + "%is" % (size), self.read(size))[0]
+		return ret.decode(encoding)
+
+	def read_cstring(self):
 		ret = []
 		c = b""
 		while c != b"\0":
@@ -24,13 +37,7 @@ class BinaryReader:
 			c = self.read(1)
 			if not c:
 				raise ValueError("Unterminated string: %r" % (ret))
-		return b"".join(ret).decode(encoding)
-
-	def seek(self, *args):
-		return self.buf.seek(*args)
-
-	def tell(self):
-		return self.buf.tell()
+		return b"".join(ret)
 
 	def read_byte(self):
 		return struct.unpack(self.endian + "b", self.read(1))[0]

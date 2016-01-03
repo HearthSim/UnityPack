@@ -25,6 +25,11 @@ class TypeTree:
 	def __init__(self):
 		self.children = []
 
+	def __repr__(self):
+		return "<%s %s (size=%r, index=%r, is_array=%r, flags=%r)>" % (
+			self.type, self.name, self.size, self.index, self.is_array, self.flags
+		)
+
 	def load_blob(self, buf):
 		self.num_nodes = buf.read_uint()
 		self.buffer_bytes = buf.read_uint()
@@ -41,7 +46,7 @@ class TypeTree:
 			is_array = buf.read_byte()
 			type_offset = buf.read_int()
 			name_offset = buf.read_int()
-			size = buf.read_uint()
+			size = buf.read_int()
 			index = buf.read_uint()
 			flags = buf.read_int()
 			type = self.NULL
@@ -111,30 +116,58 @@ class TypeMetadata:
 
 
 class ObjectInfo:
-	def __init__(self, parent):
-		self.parent = parent
+	def __init__(self, asset):
+		self.asset = asset
 
 	def __repr__(self):
 		return "<%s %i>" % (self.type, self.class_id)
 
 	def bytes(self):
-		self.parent.data.seek(self.parent.data_offset + self.data_offset)
-		return self.parent.data.read(self.size)
+		self.asset.data.seek(self.asset.data_offset + self.data_offset)
+		return self.asset.data.read(self.size)
 
 	def load(self, buf):
-		self.data_offset = buf.read_uint()
+		self.data_offset = buf.read_uint() + self.asset.data_offset
 		self.size = buf.read_uint()
 		self.type = UnityClass(buf.read_uint())
 		self.class_id = buf.read_int16()
 
-		if self.parent.format <= 10:
+		if self.asset.format <= 10:
 			self.is_destroyed = bool(buf.read_int16())
-		elif self.parent.format >= 11:
+		elif self.asset.format >= 11:
 			self.unk0 = buf.read_int16()
 
-			if self.parent.format >= 15:
+			if self.asset.format >= 15:
 				self.unk1 = buf.read_byte()
 
+	def read(self):
+		type = self.asset.types[self.type]
+		buf = BinaryReader(self.asset.data)
+		buf.seek(self.data_offset - 4)  # I'm sure this is normal.
+		result = self.read_value(type, buf)
+
+	def read_value(self, type, buf):
+		t = type.type
+		first_child = type.children[0] if type.children else TypeTree()
+		if t == "string":
+			size = buf.read_uint()
+			result = buf.read_string(size)
+		else:
+			if type.is_array:
+				first_child = type
+
+			if first_child and first_child.is_array:
+				size = buf.read_uint()
+				array_type = first_child.children[0]
+				result = None
+
+			else:
+				assert t == "TextAsset", t
+				result = {}
+				for child in type.children:
+					result[child.name] = self.read_value(child, buf)
+
+		return result
 
 class Asset:
 	def __init__(self):
