@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import os
 import sys
-from enum import IntEnum
 from io import BytesIO
 from .utils import BinaryReader
+from .enums import UnityClass
 
 
 SIGNATURE_WEB = "UnityWeb"
