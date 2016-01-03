@@ -156,7 +156,22 @@ class ObjectInfo:
 		align = False
 		t = type.type
 		first_child = type.children[0] if type.children else TypeTree()
-		if t == "string":
+		if t == "bool":
+			result = buf.read_boolean()
+		elif t == "UInt8":
+			result = buf.read_byte()
+		elif t == "UInt16":
+			result = buf.read_int16()
+		elif t == "UInt64":
+			result = buf.read_int64()
+		elif t == "unsigned int":
+			result = buf.read_uint()
+		elif t == "int":
+			result = buf.read_int()
+		elif t == "float":
+			buf.align()
+			result = buf.read_float()
+		elif t == "string":
 			size = buf.read_uint()
 			result = buf.read_string(size)
 			align = type.children[0].post_align
