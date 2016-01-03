@@ -1,6 +1,20 @@
 #!/usr/bin/env python
+import os
 import sys
 import unitypack
+
+
+def write_to_file(filename, contents):
+	basedir = "out"
+
+	if not os.path.exists(basedir):
+		os.makedirs(basedir)
+
+	path = os.path.join(basedir, filename)
+	with open(path, "w") as f:
+		written = f.write(contents)
+
+	print("Written %i bytes to %r" % (written, path))
 
 
 def main():
@@ -14,8 +28,8 @@ def main():
 			for id, obj in asset.objects.items():
 				if obj.type != "TextAsset":
 					continue
-				print(obj)
-				print(obj.read())
+				d = obj.read()
+				write_to_file(d["m_Name"] + ".txt", d["m_Script"])
 
 
 if __name__ == "__main__":
