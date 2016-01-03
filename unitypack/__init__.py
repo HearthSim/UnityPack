@@ -102,7 +102,7 @@ class TypeMetadata:
 		assert self.target_platform == 5  # Windows. RuntimePlatform?
 
 		# if format >= 13
-		self.has_type_trees = bool(buf.read_byte())
+		self.has_type_trees = buf.read_boolean()
 		self.num_types = buf.read_int()
 
 		for i in range(self.num_types):
@@ -192,7 +192,6 @@ class ObjectInfo:
 						result.append(self.read_value(array_type, buf))
 
 			else:
-				assert t == "TextAsset", t
 				result = {}
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)

@@ -39,6 +39,9 @@ class BinaryReader:
 				raise ValueError("Unterminated string: %r" % (ret))
 		return b"".join(ret)
 
+	def read_boolean(self):
+		return struct.unpack(self.endian + "b", self.read(1))[0]
+
 	def read_byte(self):
 		return struct.unpack(self.endian + "b", self.read(1))[0]
 
@@ -50,6 +53,9 @@ class BinaryReader:
 
 	def read_uint(self):
 		return struct.unpack(self.endian + "I", self.read(4))[0]
+
+	def read_float(self):
+		return struct.unpack(self.endian + "f", self.read(4))[0]
 
 	def read_int64(self):
 		return struct.unpack(self.endian + "q", self.read(8))[0]
