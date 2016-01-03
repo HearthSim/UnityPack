@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 import os
-import sys
 from io import BytesIO
 from .utils import BinaryReader
 from .enums import UnityClass
@@ -258,20 +256,3 @@ class AssetBundle:
 			asset = Asset()
 			asset.load(buf)
 			self.assets.append(asset)
-
-
-def main():
-	files = sys.argv[1:]
-	for file in files:
-		bundle = AssetBundle.from_path(file)
-		print(bundle)
-		for asset in bundle.assets:
-			print(asset)
-			for id, obj in asset.objects.items():
-				if obj.type != UnityClass.TextAsset:
-					continue
-				print(obj)
-
-
-if __name__ == "__main__":
-	main()

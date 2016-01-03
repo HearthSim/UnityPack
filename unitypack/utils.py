@@ -1,4 +1,5 @@
 import struct
+from os import SEEK_CUR
 
 
 class BinaryReader:
@@ -10,7 +11,7 @@ class BinaryReader:
 		old = self.tell()
 		new = (old + 3) & -4
 		if new > old:
-			self.seek(new - old, os.SEEK_CUR)
+			self.seek(new - old, SEEK_CUR)
 
 	def read(self, *args):
 		return self.buf.read(*args)
