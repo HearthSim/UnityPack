@@ -61,7 +61,7 @@ class TypeTree:
 				while len(parents) > depth:
 					parents.pop()
 				curr = TypeTree()
-				parents[0].children.append(curr)
+				parents[-1].children.append(curr)
 				parents.append(curr)
 
 			curr.type = type
