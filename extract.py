@@ -6,8 +6,9 @@ import unitypack
 def main():
 	files = sys.argv[1:]
 	for file in files:
-		bundle = unitypack.AssetBundle.from_path(file)
-		print(bundle)
+		with open(file, "rb") as f:
+			bundle = unitypack.load(f)
+
 		for asset in bundle.assets:
 			print(asset)
 			for id, obj in asset.objects.items():

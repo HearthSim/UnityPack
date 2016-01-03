@@ -148,7 +148,7 @@ class ObjectInfo:
 		type = self.asset.types[self.type]
 		buf = BinaryReader(self.asset.data)
 		buf.seek(self.data_offset)
-		result = self.read_value(type, buf)
+		return self.read_value(type, buf)
 
 	def read_value(self, type, buf):
 		align = False
@@ -265,27 +265,12 @@ class Asset:
 
 
 class AssetBundle:
-	@classmethod
-	def from_path(cls, path):
-		ret = cls()
-		ret.load_file(path)
-		return ret
-
 	def __init__(self):
-		self.file = None
 		self.assets = []
 
-	def __del__(self):
-		if self.file:
-			self.file.close()
+	def load(self, file):
+		buf = BinaryReader(file, endian=">")
 
-	def load_file(self, path):
-		file = open(path, "rb")
-		self.file = file
-		self.read_header()
-
-	def read_header(self):
-		buf = BinaryReader(self.file, endian=">")
 		self.signature = buf.read_string()
 		self.format_version = buf.read_int()
 		self.unity_version = buf.read_string()
@@ -315,3 +300,9 @@ class AssetBundle:
 			asset = Asset()
 			asset.load(buf)
 			self.assets.append(asset)
+
+
+def load(file):
+	ret = AssetBundle()
+	ret.load(file)
+	return ret
