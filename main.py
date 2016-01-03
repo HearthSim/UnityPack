@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import os
-import struct
 import sys
 from enum import IntEnum
 from io import BytesIO
+from .utils import BinaryReader
 
 
 SIGNATURE_WEB = "UnityWeb"
@@ -11,57 +11,6 @@ SIGNATURE_RAW = "UnityRaw"
 
 with open(os.path.join(os.path.dirname(__file__), "strings.dat"), "rb") as f:
 	STRINGS_DAT = f.read()
-
-
-class UnityClass(IntEnum):
-	TextAsset = 49
-	AssetBundle = 142
-
-
-class BinaryReader:
-	def __init__(self, buf, endian="<"):
-		self.buf = buf
-		self.endian = endian
-
-	def read_string(self, encoding="utf-8"):
-		ret = []
-		c = b""
-		while c != b"\0":
-			ret.append(c)
-			c = self.read(1)
-			if not c:
-				raise ValueError("Unterminated string: %r" % (ret))
-		return b"".join(ret).decode(encoding)
-
-	def read(self, *args):
-		return self.buf.read(*args)
-
-	def seek(self, *args):
-		return self.buf.seek(*args)
-
-	def tell(self):
-		return self.buf.tell()
-
-	def read_byte(self):
-		return struct.unpack(self.endian + "b", self.read(1))[0]
-
-	def read_int16(self):
-		return struct.unpack(self.endian + "h", self.read(2))[0]
-
-	def read_int(self):
-		return struct.unpack(self.endian + "i", self.read(4))[0]
-
-	def read_uint(self):
-		return struct.unpack(self.endian + "I", self.read(4))[0]
-
-	def read_int64(self):
-		return struct.unpack(self.endian + "q", self.read(8))[0]
-
-	def align(self):
-		old = self.tell()
-		new = (old + 3) & -4
-		if new > old:
-			self.seek(new - old, os.SEEK_CUR)
 
 
 class TypeTree:
@@ -121,7 +70,6 @@ class TypeTree:
 		else:
 			return self.NULL
 		return data[offset:].partition(b"\0")[0].decode("utf-8")
-
 
 
 class TypeMetadata:
