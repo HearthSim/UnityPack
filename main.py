@@ -1,11 +1,18 @@
 #!/usr/bin/env python
+import os
 import struct
 import sys
+from enum import IntEnum
 from io import BytesIO
 
 
 SIGNATURE_WEB = "UnityWeb"
 SIGNATURE_RAW = "UnityRaw"
+
+
+class UnityClass(IntEnum):
+	TextAsset = 49
+	AssetBundle = 142
 
 
 class BinaryReader:
@@ -35,11 +42,23 @@ class BinaryReader:
 	def read_byte(self):
 		return struct.unpack(self.endian + "b", self.read(1))[0]
 
+	def read_int16(self):
+		return struct.unpack(self.endian + "h", self.read(2))[0]
+
 	def read_int(self):
 		return struct.unpack(self.endian + "i", self.read(4))[0]
 
 	def read_uint(self):
 		return struct.unpack(self.endian + "I", self.read(4))[0]
+
+	def read_int64(self):
+		return struct.unpack(self.endian + "q", self.read(8))[0]
+
+	def align(self):
+		old = self.tell()
+		new = (old + 3) & -4
+		if new > old:
+			self.seek(new - old, os.SEEK_CUR)
 
 
 class TypeTree:
@@ -81,12 +100,34 @@ class TypeMetadata:
 				trees[class_id] = tree
 
 
+class ObjectInfo:
+	def __init__(self, format):
+		self.format = format
+
+	def __repr__(self):
+		return "<%s %i>" % (self.type.name, self.class_id)
+
+	def load(self, buf):
+		self.byte_start = buf.read_uint()
+		self.size = buf.read_uint()
+		self.type = UnityClass(buf.read_uint())
+		self.class_id = buf.read_uint()
+
+		if self.format <= 10:
+			self.is_destroyed = bool(buf.read_int16())
+		elif self.format >= 11:
+			self.unk0 = buf.read_int16()
+
+			if self.format >= 15:
+				self.unk1 = buf.read_byte()
+
+
 class Asset:
 	def __init__(self):
 		self.objects = {}
 
 	def __repr__(self):
-		return "<Asset %s>" % (self.name)
+		return "<%s %s>" % (self.__class__.__name__, self.name)
 
 	def read_header(self, buf):
 		offset = buf.tell()
@@ -107,6 +148,22 @@ class Asset:
 
 		self.tree = TypeMetadata()
 		self.tree.load(buf)
+
+		self.num_objects = buf.read_uint()
+		for i in range(self.num_objects):
+			if self.format >= 14:
+				buf.align()
+				path_id = buf.read_int64()
+			else:
+				path_id = buf.read_int()
+
+			obj = ObjectInfo(self.format)
+			obj.load(buf)
+
+			if path_id in self.objects:
+				raise ValueError("Duplicate asset object: %r" % (obj))
+
+			self.objects[path_id] = obj
 
 		buf.seek(offset + self.data_offset)
 		self.data = BytesIO(buf.read(self.size))
@@ -172,7 +229,7 @@ def main():
 		print(bundle)
 		for asset in bundle.assets:
 			print(asset)
-			for obj in asset.objects:
+			for id, obj in asset.objects.items():
 				print(obj)
 
 
