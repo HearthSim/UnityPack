@@ -143,7 +143,6 @@ class ObjectInfo:
 	def read(self):
 		type = self.asset.types[self.type]
 		buf = BinaryReader(self.asset.data)
-		buf.seek(self.data_offset - 4)  # I'm sure this is normal.
 		result = self.read_value(type, buf)
 
 	def read_value(self, type, buf):
@@ -185,13 +184,14 @@ class Asset:
 		self.header_size = buf.read_uint()
 		self.size = buf.read_uint()
 
-		buf.seek(offset + self.header_size)
+		buf.seek(offset + self.header_size - 4)
 		self.data = BytesIO(buf.read(self.size))
 		self.prepare()
 
 	def prepare(self):
 		buf = BinaryReader(self.data, endian=">")
 
+		self.metadata_size = buf.read_uint()
 		self.file_size = buf.read_uint()
 		self.format = buf.read_uint()
 		self.data_offset = buf.read_uint()
