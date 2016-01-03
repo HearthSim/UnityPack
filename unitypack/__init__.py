@@ -1,6 +1,8 @@
 import os
 import json
+from binascii import hexlify
 from io import BytesIO
+from uuid import UUID
 from .utils import BinaryReader
 
 
@@ -256,12 +258,25 @@ class Asset:
 
 		self.num_refs = buf.read_uint()
 		for i in range(self.num_refs):
-			ref = AssetRef()  # TODO
+			ref = AssetRef()
 			ref.load(buf)
 			self.asset_refs.append(ref)
 
 		unk_string = buf.read_string()
 		assert not unk_string, unk_string
+
+
+class AssetRef:
+	def load(self, buf):
+		self.asset_path = buf.read_string()
+		self.guid = UUID(hexlify(buf.read(16)).decode("utf-8"))
+		self.type = buf.read_int()
+		self.file_path = buf.read_string()
+
+	def __repr__(self):
+		return "<%s (asset_path=%r, guid=%r, type=%r, file_path=%r)>" % (
+			self.__class__.__name__, self.asset_path, self.guid, self.type, self.file_path
+		)
 
 
 class AssetBundle:
