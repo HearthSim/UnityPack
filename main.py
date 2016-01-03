@@ -71,6 +71,10 @@ class TypeTree:
 
 
 class TypeMetadata:
+	def __init__(self):
+		self.type_trees = {}
+		self.hashes = {}
+
 	def load(self, buf):
 		offset = buf.tell()
 		self.generator_version = buf.read_string()
@@ -82,9 +86,6 @@ class TypeMetadata:
 		self.has_type_trees = bool(buf.read_byte())
 		self.num_types = buf.read_int()
 
-		hashes = {}
-		trees = {}
-
 		for i in range(self.num_types):
 			class_id = buf.read_int()  # TODO get unity class
 			if class_id < 0:
@@ -92,50 +93,63 @@ class TypeMetadata:
 			else:
 				hash = buf.read(0x10)
 
-			hashes[class_id] = hash
+			self.hashes[class_id] = hash
 
 			if self.has_type_trees:
 				tree = TypeTree()
 				tree.load_blob(buf)
-				trees[class_id] = tree
+				self.type_trees[class_id] = tree
 
 
 class ObjectInfo:
-	def __init__(self, format):
-		self.format = format
+	def __init__(self, parent):
+		self.parent = parent
 
 	def __repr__(self):
 		return "<%s %i>" % (self.type.name, self.class_id)
 
+	def bytes(self):
+		self.parent.data.seek(self.parent.data_offset + self.data_offset)
+		return self.parent.data.read(self.size)
+
 	def load(self, buf):
-		self.byte_start = buf.read_uint()
+		self.data_offset = buf.read_uint()
 		self.size = buf.read_uint()
 		self.type = UnityClass(buf.read_uint())
-		self.class_id = buf.read_uint()
+		self.class_id = buf.read_int16()
 
-		if self.format <= 10:
+		if self.parent.format <= 10:
 			self.is_destroyed = bool(buf.read_int16())
-		elif self.format >= 11:
+		elif self.parent.format >= 11:
 			self.unk0 = buf.read_int16()
 
-			if self.format >= 15:
+			if self.parent.format >= 15:
 				self.unk1 = buf.read_byte()
 
 
 class Asset:
 	def __init__(self):
 		self.objects = {}
+		self.adds = []
+		self.asset_refs = []
+		self.types = {}
 
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
 
-	def read_header(self, buf):
+	def load(self, buf):
 		offset = buf.tell()
 		self.name = buf.read_string()
 		self.header_size = buf.read_uint()
 		self.size = buf.read_uint()
 
 		buf.seek(offset + self.header_size)
+		self.data = BytesIO(buf.read(self.size))
+		self.prepare()
+
+	def prepare(self):
+		buf = BinaryReader(self.data, endian=">")
+
 		self.file_size = buf.read_uint()
 		self.format = buf.read_uint()
 		self.data_offset = buf.read_uint()
@@ -157,16 +171,37 @@ class Asset:
 			else:
 				path_id = buf.read_int()
 
-			obj = ObjectInfo(self.format)
+			obj = ObjectInfo(self)
 			obj.load(buf)
+
+			if obj.type in self.tree.type_trees:
+				self.types[obj.type] = self.tree.type_trees[obj.type]
+			elif obj.type not in self.types:
+				self.types[obj.type] = TypeMetadata.default().type_trees[obj.type]
 
 			if path_id in self.objects:
 				raise ValueError("Duplicate asset object: %r" % (obj))
 
 			self.objects[path_id] = obj
 
-		buf.seek(offset + self.data_offset)
-		self.data = BytesIO(buf.read(self.size))
+		if self.format >= 11:
+			num_adds = buf.read_uint()
+			for i in range(num_adds):
+				if self.format >= 14:
+					buf.align()
+					id = buf.read_int64()
+				else:
+					id = buf.read_int()
+				self.adds.append((id, buf.read_int()))
+
+		self.num_refs = buf.read_uint()
+		for i in range(self.num_refs):
+			ref = AssetRef()  # TODO
+			ref.load(buf)
+			self.asset_refs.append(ref)
+
+		unk_string = buf.read_string()
+		assert not unk_string, unk_string
 
 
 class AssetBundle:
@@ -218,7 +253,7 @@ class AssetBundle:
 		self.num_assets = buf.read_int()
 		for i in range(self.num_assets):
 			asset = Asset()
-			asset.read_header(buf)
+			asset.load(buf)
 			self.assets.append(asset)
 
 
@@ -230,6 +265,8 @@ def main():
 		for asset in bundle.assets:
 			print(asset)
 			for id, obj in asset.objects.items():
+				if obj.type != UnityClass.TextAsset:
+					continue
 				print(obj)
 
 
