@@ -13,13 +13,19 @@ class BinaryReader:
 
 	def read_string(self, encoding="utf-8"):
 		ret = []
-		c = ""
+		c = b""
 		while c != b"\0":
+			ret.append(c)
 			c = self.buf.read(1)
 			if not c:
 				raise ValueError("Unterminated string: %r" % (ret))
-			ret.append(c)
 		return b"".join(ret).decode(encoding)
+
+	def read_int(self):
+		return struct.unpack(">i", self.buf.read(4))[0]
+
+	def read_uint(self):
+		return struct.unpack(">I", self.buf.read(4))[0]
 
 
 class AssetBundle:
@@ -48,6 +54,22 @@ class AssetBundle:
 	def read_header(self):
 		buf = BinaryReader(self.file)
 		self.signature = buf.read_string()
+		self.format_version = buf.read_int()
+		self.unity_version = buf.read_string()
+		self.generator_version = buf.read_string()
+		self.file_size = buf.read_uint()
+		self.header_size = buf.read_int()
+
+		self.file_count = buf.read_int()
+		self.bundle_count = buf.read_int()
+
+		if self.format_version >= 2:
+			self.complete_file_size = buf.read_uint()
+
+			if self.format_version >= 3:
+				self.data_header_size = buf.read_uint()
+
+		buf.buf.read(1)
 
 
 def main():
