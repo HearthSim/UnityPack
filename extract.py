@@ -4,6 +4,12 @@ import sys
 import unitypack
 
 
+SUPPORTED_FORMATS = (
+	"TextAsset",
+	"Texture2D"
+)
+
+
 def write_to_file(filename, contents):
 	basedir = "out"
 
@@ -26,10 +32,14 @@ def main():
 		for asset in bundle.assets:
 			print(asset)
 			for id, obj in asset.objects.items():
-				if obj.type != "TextAsset":
+				if obj.type not in SUPPORTED_FORMATS:
+					print("Skipping %r" % (obj))
 					continue
+
 				d = obj.read()
-				write_to_file(d["m_Name"] + ".txt", d["m_Script"])
+
+				if obj.type == "TextAsset":
+					write_to_file(d.name + ".txt", d.script)
 
 
 if __name__ == "__main__":

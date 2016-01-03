@@ -4,6 +4,7 @@ from binascii import hexlify
 from io import BytesIO
 from uuid import UUID
 from .utils import BinaryReader
+from .textasset import TextAsset
 
 
 SIGNATURE_WEB = "UnityWeb"
@@ -190,11 +191,13 @@ class ObjectInfo:
 					result = []
 					for i in range(size):
 						result.append(self.read_value(array_type, buf))
-
 			else:
 				result = {}
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)
+
+				if t == "TextAsset":
+					result = TextAsset(result)
 
 		if align or type.post_align:
 			buf.align()
