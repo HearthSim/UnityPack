@@ -30,6 +30,10 @@ class TypeTree:
 			self.type, self.name, self.size, self.index, self.is_array, self.flags
 		)
 
+	@property
+	def post_align(self):
+		return self.flags & 0x4000
+
 	def load_blob(self, buf):
 		self.num_nodes = buf.read_uint()
 		self.buffer_bytes = buf.read_uint()
@@ -143,22 +147,32 @@ class ObjectInfo:
 	def read(self):
 		type = self.asset.types[self.type]
 		buf = BinaryReader(self.asset.data)
+		buf.seek(self.data_offset)
 		result = self.read_value(type, buf)
 
 	def read_value(self, type, buf):
+		align = False
 		t = type.type
 		first_child = type.children[0] if type.children else TypeTree()
 		if t == "string":
 			size = buf.read_uint()
 			result = buf.read_string(size)
+			align = type.children[0].post_align
 		else:
 			if type.is_array:
 				first_child = type
 
 			if first_child and first_child.is_array:
+				align = first_child.post_align
 				size = buf.read_uint()
-				array_type = first_child.children[0]
-				result = None
+				array_type = first_child.children[1]
+				if array_type.type in ("char", "UInt8"):
+					data = buf.read(size)
+					result = repr(data)
+				else:
+					result = []
+					for i in range(size):
+						result.append(self.read_value(array_type, buf))
 
 			else:
 				assert t == "TextAsset", t
@@ -166,7 +180,11 @@ class ObjectInfo:
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)
 
+		if align or type.post_align:
+			buf.align()
+
 		return result
+
 
 class Asset:
 	def __init__(self):
