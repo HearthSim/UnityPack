@@ -4,7 +4,7 @@ from binascii import hexlify
 from io import BytesIO
 from uuid import UUID
 from .utils import BinaryReader
-from .textasset import TextAsset
+from .textasset import TextAsset, Shader
 from .texture2d import Texture2D
 
 
@@ -220,6 +220,8 @@ class ObjectInfo:
 
 				if t == "TextAsset":
 					result = TextAsset(result)
+				elif t == "Shader":
+					result = Shader(result)
 				elif t == "Texture2D":
 					result = Texture2D(result)
 

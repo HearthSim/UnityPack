@@ -6,8 +6,9 @@ from PIL import ImageOps
 
 
 SUPPORTED_FORMATS = (
+	"Shader",
 	"TextAsset",
-	"Texture2D"
+	"Texture2D",
 )
 
 
@@ -38,6 +39,9 @@ def main():
 					continue
 
 				d = obj.read()
+
+				if obj.type == "Shader":
+					write_to_file(d.name + ".cg", d.script)
 
 				if obj.type == "TextAsset":
 					write_to_file(d.name + ".txt", d.script)
