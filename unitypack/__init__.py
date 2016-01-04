@@ -123,7 +123,7 @@ class TypeMetadata:
 		self.num_types = buf.read_int()
 
 		for i in range(self.num_types):
-			class_id = buf.read_int()  # TODO get unity class
+			class_id = buf.read_int()
 			if class_id < 0:
 				hash = buf.read(0x20)
 			else:
@@ -134,8 +134,7 @@ class TypeMetadata:
 			if self.has_type_trees:
 				tree = TypeTree()
 				tree.load_blob(buf)
-				self.type_trees[UnityClass(class_id)] = tree
-				self.type_trees
+				self.type_trees[class_id] = tree
 
 
 class ObjectInfo:
@@ -145,14 +144,17 @@ class ObjectInfo:
 	def __repr__(self):
 		return "<%s %i>" % (self.type, self.class_id)
 
-	def bytes(self):
-		self.asset.data.seek(self.asset.data_offset + self.data_offset)
-		return self.asset.data.read(self.size)
+	@property
+	def type(self):
+		if self.type_id > 0:
+			return UnityClass(self.type_id)
+		else:
+			return "<N/A>"
 
 	def load(self, buf):
 		self.data_offset = buf.read_uint() + self.asset.data_offset
 		self.size = buf.read_uint()
-		self.type = UnityClass(buf.read_uint())
+		self.type_id = buf.read_int()
 		self.class_id = buf.read_int16()
 
 		if self.asset.format <= 10:
@@ -164,7 +166,7 @@ class ObjectInfo:
 				self.unk1 = buf.read_byte()
 
 	def read(self):
-		type = self.asset.types[self.type]
+		type = self.asset.types[self.type_id]
 		buf = BinaryReader(self.asset.data)
 		buf.seek(self.data_offset)
 		return self.read_value(type, buf)
@@ -271,9 +273,9 @@ class Asset:
 			obj.load(buf)
 
 			if obj.type in self.tree.type_trees:
-				self.types[obj.type] = self.tree.type_trees[obj.type]
+				self.types[obj.type_id] = self.tree.type_trees[obj.type_id]
 			elif obj.type not in self.types:
-				self.types[obj.type] = TypeMetadata.default().type_trees[obj.type]
+				self.types[obj.type_id] = TypeMetadata.default().type_trees[obj.class_id]
 
 			if path_id in self.objects:
 				raise ValueError("Duplicate asset object: %r" % (obj))
