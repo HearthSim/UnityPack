@@ -33,6 +33,13 @@ class TypeTree:
 
 	def __init__(self):
 		self.children = []
+		self.version = 0
+		self.is_array = False
+		self.size = 0
+		self.index = 0
+		self.flags = 0
+		self.type = self.NULL
+		self.name = self.NULL
 
 	def __repr__(self):
 		return "<%s %s (size=%r, index=%r, is_array=%r, flags=%r)>" % (
@@ -62,8 +69,6 @@ class TypeTree:
 			size = buf.read_int()
 			index = buf.read_uint()
 			flags = buf.read_int()
-			type = self.NULL
-			name = self.NULL
 
 			type = self.get_string(type_offset)
 			name = self.get_string(name_offset)
