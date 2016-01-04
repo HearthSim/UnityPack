@@ -11,11 +11,16 @@ from .texture2d import Texture2D
 SIGNATURE_WEB = "UnityWeb"
 SIGNATURE_RAW = "UnityRaw"
 
-with open(os.path.join(os.path.dirname(__file__), "strings.dat"), "rb") as f:
+
+def get_asset(name):
+	return os.path.join(os.path.dirname(__file__), name)
+
+
+with open(get_asset("strings.dat"), "rb") as f:
 	STRINGS_DAT = f.read()
 
 
-with open(os.path.join(os.path.dirname(__file__), "classes.json"), "r") as f:
+with open(get_asset("classes.json"), "r") as f:
 	UNITY_CLASSES = json.load(f)
 
 
@@ -92,6 +97,16 @@ class TypeTree:
 
 
 class TypeMetadata:
+	default_instance = None
+
+	@classmethod
+	def default(cls):
+		if not cls.default_instance:
+			cls.default_instance = cls()
+			with open(get_asset("structs.dat"), "rb") as f:
+				cls.default_instance.load(BinaryReader(f))
+		return cls.default_instance
+
 	def __init__(self):
 		self.type_trees = {}
 		self.hashes = {}
