@@ -1,5 +1,6 @@
 from enum import IntEnum
 from io import BytesIO
+from . import dds
 
 
 class TextureFormat(IntEnum):
@@ -78,3 +79,23 @@ class Texture2D:
 		return "<%s %s (%s %ix%i)>" % (
 			self.__class__.__name__, self.name, self.format.name, self.width, self.height
 		)
+
+	@property
+	def decoded_data(self):
+		if self.format == TextureFormat.DXT1:
+			codec = dds.dxt1
+		elif self.format == TextureFormat.DXT5:
+			codec = dds.dxt5
+		else:
+			raise UnimplementedError("Unimplemented format %r" % (self.format))
+
+		return codec(self.data, self.width, self.height)
+
+	@property
+	def image(self):
+		from PIL import Image
+
+		size = (self.width, self.height)
+		img = Image.frombytes("RGBA", size, bytes(self.decoded_data))
+
+		return img

@@ -2,6 +2,7 @@
 import os
 import sys
 import unitypack
+from PIL import ImageOps
 
 
 SUPPORTED_FORMATS = (
@@ -40,6 +41,11 @@ def main():
 
 				if obj.type == "TextAsset":
 					write_to_file(d.name + ".txt", d.script)
+
+				elif obj.type == "Texture2D":
+					print("Decoding %r" % (d))
+					img = ImageOps.flip(d.image)
+					img.save("out/%s.png" % (d.name))
 
 
 if __name__ == "__main__":
