@@ -10,14 +10,14 @@ SUPPORTED_FORMATS = (
 )
 
 
-def write_to_file(filename, contents):
+def write_to_file(filename, contents, mode="w"):
 	basedir = "out"
 
 	if not os.path.exists(basedir):
 		os.makedirs(basedir)
 
 	path = os.path.join(basedir, filename)
-	with open(path, "w") as f:
+	with open(path, mode) as f:
 		written = f.write(contents)
 
 	print("Written %i bytes to %r" % (written, path))

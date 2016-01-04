@@ -5,6 +5,7 @@ from io import BytesIO
 from uuid import UUID
 from .utils import BinaryReader
 from .textasset import TextAsset
+from .texture2d import Texture2D
 
 
 SIGNATURE_WEB = "UnityWeb"
@@ -185,8 +186,7 @@ class ObjectInfo:
 				size = buf.read_uint()
 				array_type = first_child.children[1]
 				if array_type.type in ("char", "UInt8"):
-					data = buf.read(size)
-					result = repr(data)
+					result = buf.read(size)
 				else:
 					result = []
 					for i in range(size):
@@ -198,6 +198,8 @@ class ObjectInfo:
 
 				if t == "TextAsset":
 					result = TextAsset(result)
+				elif t == "Texture2D":
+					result = Texture2D(result)
 
 		if align or type.post_align:
 			buf.align()
