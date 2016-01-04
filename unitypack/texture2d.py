@@ -1,3 +1,4 @@
+import struct
 from enum import IntEnum
 from io import BytesIO
 from . import dds
@@ -58,6 +59,18 @@ class TextureFormat(IntEnum):
 	ASTC_RGBA_12x12 = 59
 
 
+def argb_to_rgba(data, width, height):
+	pixels = len(data) // 16
+	data = BytesIO(data)
+	ret = bytearray()
+
+	for i in range(pixels):
+		a, r, g, b = struct.unpack("<4I", data.read(16))
+		ret += struct.pack("<4I", r, g, b, a)
+
+	return ret
+
+
 class Texture2D:
 	def __init__(self, data):
 		if data:
@@ -86,8 +99,12 @@ class Texture2D:
 			codec = dds.dxt1
 		elif self.format == TextureFormat.DXT5:
 			codec = dds.dxt5
+		elif self.format in (TextureFormat.RGB24, TextureFormat.RGBA32):
+			codec = lambda data, w, h: data
+		elif self.format == TextureFormat.ARGB32:
+			codec = argb_to_rgba
 		else:
-			raise UnimplementedError("Unimplemented format %r" % (self.format))
+			raise NotImplementedError("Unimplemented format %r" % (self.format))
 
 		return codec(self.data, self.width, self.height)
 
@@ -95,7 +112,12 @@ class Texture2D:
 	def image(self):
 		from PIL import Image
 
+		if self.format == TextureFormat.RGB24:
+			mode = "RGB"
+		else:
+			mode = "RGBA"
+
 		size = (self.width, self.height)
-		img = Image.frombytes("RGBA", size, bytes(self.decoded_data))
+		img = Image.frombytes(mode, size, bytes(self.decoded_data))
 
 		return img
