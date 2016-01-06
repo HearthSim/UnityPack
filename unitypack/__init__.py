@@ -264,6 +264,11 @@ class Asset:
 		self.name = buf.read_string()
 		self.header_size = buf.read_uint()
 		self.size = buf.read_uint()
+		self.meta_end = buf.tell()
+
+		# Skip resource asset files
+		if self.name.endswith("resource"):
+			return
 
 		buf.seek(offset + self.header_size - 4)
 		self.data = BytesIO(buf.read(self.size))
@@ -377,6 +382,7 @@ class AssetBundle:
 			asset = Asset()
 			asset.load(buf)
 			self.assets.append(asset)
+			buf.seek(asset.meta_end)
 
 
 def load(file):
