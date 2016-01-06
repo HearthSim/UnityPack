@@ -203,7 +203,24 @@ class ObjectInfo:
 			if type.is_array:
 				first_child = type
 
-			if first_child and first_child.is_array:
+			if t.startswith("PPtr<"):
+				file_id = buf.read_int()
+				if self.asset.format >= 14:
+					path_id = buf.read_int64()
+				else:
+					path_id = buf.read_int()
+
+				if file_id == 0:
+					other = self.asset
+				else:
+					other = self.asset.asset_refs[file_id - 1].asset
+
+				if path_id:
+					result = {"_type": "Class", "classAsset": other, "classPathId": path_id}
+				else:
+					result = None
+
+			elif first_child and first_child.is_array:
 				align = first_child.post_align
 				size = buf.read_uint()
 				array_type = first_child.children[1]
@@ -215,6 +232,7 @@ class ObjectInfo:
 						result.append(self.read_value(array_type, buf))
 			else:
 				result = {}
+
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)
 
@@ -315,6 +333,7 @@ class AssetRef:
 		self.guid = UUID(hexlify(buf.read(16)).decode("utf-8"))
 		self.type = buf.read_int()
 		self.file_path = buf.read_string()
+		self.asset = None  # TODO loadrefs
 
 	def __repr__(self):
 		return "<%s (asset_path=%r, guid=%r, type=%r, file_path=%r)>" % (
