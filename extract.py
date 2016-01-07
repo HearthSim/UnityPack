@@ -41,7 +41,10 @@ def main():
 
 				d = obj.read()
 
-				if obj.type == "Shader":
+				if obj.type == "AudioClip":
+					write_to_file(d.name + ".fsb", d.data, mode="wb")
+
+				elif obj.type == "Shader":
 					write_to_file(d.name + ".cg", d.script)
 
 				elif obj.type == "TextAsset":

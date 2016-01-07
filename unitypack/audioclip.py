@@ -31,3 +31,19 @@ class AudioClip(Object):
 	preload_audio_data = field("m_PreloadAudioData")
 	subsound_index = field("m_SubsoundIndex")
 	resource = field("m_Resource")
+
+	@property
+	def data(self):
+		if not hasattr(self, "_data"):
+			self._data = self.resource.get_data()
+		return self._data
+
+
+class StreamedResource(Object):
+	offset = field("m_Offset")
+	source = field("m_Source")
+	size = field("m_Size")
+
+	def get_data(self):
+		self.asset.data.seek(self.offset)
+		return self.asset.data.read(self.size)

@@ -2,8 +2,9 @@ import os
 import json
 from binascii import hexlify
 from io import BytesIO
+from urllib.parse import urlparse
 from uuid import UUID
-from .audioclip import AudioClip
+from .audioclip import AudioClip, StreamedResource
 from .textasset import TextAsset, Shader
 from .texture2d import Texture2D
 from .utils import BinaryReader
@@ -239,6 +240,9 @@ class ObjectInfo:
 
 				if t == "AudioClip":
 					result = AudioClip(result)
+				if t == "StreamedResource":
+					result = StreamedResource(result)
+					result.asset = self.asset.bundle.get_asset(result.source)
 				elif t == "TextAsset":
 					result = TextAsset(result)
 				elif t == "Shader":
@@ -269,12 +273,13 @@ class Asset:
 		self.size = buf.read_uint()
 		self.meta_end = buf.tell()
 
+		buf.seek(offset + self.header_size - 4)
+		self.data = BytesIO(buf.read(self.size))
+
 		# Skip resource asset files
 		if self.name.endswith("resource"):
 			return
 
-		buf.seek(offset + self.header_size - 4)
-		self.data = BytesIO(buf.read(self.size))
 		self.prepare()
 
 	def prepare(self):
@@ -384,8 +389,21 @@ class AssetBundle:
 		for i in range(self.num_assets):
 			asset = Asset()
 			asset.load(buf)
+			asset.bundle = self
 			self.assets.append(asset)
 			buf.seek(asset.meta_end)
+
+	def get_asset(self, url):
+		u = urlparse(url)
+		assert u.scheme == "archive"
+
+		archive, name = os.path.split(u.path)
+		# Ignore the archive for now
+
+		for asset in self.assets:
+			if asset.name == name:
+				return asset
+		raise KeyError("No such asset: %r" % (name))
 
 
 def load(file):
