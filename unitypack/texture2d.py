@@ -2,6 +2,7 @@ import struct
 from enum import IntEnum
 from io import BytesIO
 from . import dds
+from .object import Object, field
 
 
 class TextureFormat(IntEnum):
@@ -71,22 +72,19 @@ def argb_to_rgba(data, width, height):
 	return ret
 
 
-class Texture2D:
-	def __init__(self, data):
-		if data:
-			self.name = data["m_Name"]
-			self.data = data["image data"]
-			self.height = data["m_Height"]
-			self.width = data["m_Width"]
-			self.lightmap_format = data["m_LightmapFormat"]
-			self.texture_settings = data["m_TextureSettings"]
-			self.color_space = data["m_ColorSpace"]
-			self.is_readable = data["m_IsReadable"]
-			self.read_allowed = data["m_ReadAllowed"]
-			self.format = TextureFormat(data["m_TextureFormat"])
-			self.texture_dimension = data["m_TextureDimension"]
-			self.mipmap = data["m_MipMap"]
-			self.complete_image_size = data["m_CompleteImageSize"]
+class Texture2D(Object):
+	data = field("image data")
+	height = field("m_Height")
+	width = field("m_Width")
+	lightmap_format = field("m_LightmapFormat")
+	texture_settings = field("m_TextureSettings")
+	color_space = field("m_ColorSpace")
+	is_readable = field("m_IsReadable")
+	read_allowed = field("m_ReadAllowed")
+	format = field("m_TextureFormat", TextureFormat)
+	texture_dimension = field("m_TextureDimension")
+	mipmap = field("m_MipMap")
+	complete_image_size = field("m_CompleteImageSize")
 
 	def __repr__(self):
 		return "<%s %s (%s %ix%i)>" % (
