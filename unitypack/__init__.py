@@ -3,9 +3,10 @@ import json
 from binascii import hexlify
 from io import BytesIO
 from uuid import UUID
-from .utils import BinaryReader
+from .audioclip import AudioClip
 from .textasset import TextAsset, Shader
 from .texture2d import Texture2D
+from .utils import BinaryReader
 
 
 SIGNATURE_WEB = "UnityWeb"
@@ -236,7 +237,9 @@ class ObjectInfo:
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)
 
-				if t == "TextAsset":
+				if t == "AudioClip":
+					result = AudioClip(result)
+				elif t == "TextAsset":
 					result = TextAsset(result)
 				elif t == "Shader":
 					result = Shader(result)
