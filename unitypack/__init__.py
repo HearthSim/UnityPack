@@ -210,21 +210,8 @@ class ObjectInfo:
 				first_child = type
 
 			if t.startswith("PPtr<"):
-				file_id = buf.read_int()
-				if self.asset.format >= 14:
-					path_id = buf.read_int64()
-				else:
-					path_id = buf.read_int()
-
-				if file_id == 0:
-					other = self.asset
-				else:
-					other = self.asset.asset_refs[file_id - 1].asset
-
-				if path_id:
-					result = {"_type": "Class", "classAsset": other, "classPathId": path_id}
-				else:
-					result = None
+				result = ObjectPointer(self.asset)
+				result.load(buf)
 
 			elif first_child and first_child.is_array:
 				align = first_child.post_align
@@ -258,6 +245,29 @@ class ObjectInfo:
 			buf.align()
 
 		return result
+
+
+class ObjectPointer:
+	def __init__(self, asset):
+		self.source_asset = asset
+
+	def load(self, buf):
+		self.file_id = buf.read_int()
+		if self.source_asset.format >= 14:
+			self.path_id = buf.read_int64()
+		else:
+			self.path_id = buf.read_int()
+
+	def __repr__(self):
+		return "%s(file_id=%r, path_id=%r)" % (
+			self.__class__.__name__, self.file_id, self.path_id
+		)
+
+	@property
+	def asset(self):
+		if self.file_id == 0:
+			return self.source_asset
+		return self.source_asset.asset_refs[self.file_id - 1].asset
 
 
 class Asset:
