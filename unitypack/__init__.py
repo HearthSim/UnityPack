@@ -309,16 +309,7 @@ class Asset:
 				buf.align()
 			obj = ObjectInfo(self)
 			obj.load(buf)
-
-			if obj.type in self.tree.type_trees:
-				self.types[obj.type_id] = self.tree.type_trees[obj.type_id]
-			elif obj.type not in self.types:
-				self.types[obj.type_id] = TypeMetadata.default().type_trees[obj.class_id]
-
-			if obj.path_id in self.objects:
-				raise ValueError("Duplicate asset object: %r" % (obj))
-
-			self.objects[obj.path_id] = obj
+			self.register_object(obj)
 
 		if self.format >= 11:
 			num_adds = buf.read_uint()
@@ -338,6 +329,17 @@ class Asset:
 
 		unk_string = buf.read_string()
 		assert not unk_string, unk_string
+
+	def register_object(self, obj):
+		if obj.type in self.tree.type_trees:
+			self.types[obj.type_id] = self.tree.type_trees[obj.type_id]
+		elif obj.type not in self.types:
+			self.types[obj.type_id] = TypeMetadata.default().type_trees[obj.class_id]
+
+		if obj.path_id in self.objects:
+			raise ValueError("Duplicate asset object: %r" % (obj))
+
+		self.objects[obj.path_id] = obj
 
 
 class AssetRef:
