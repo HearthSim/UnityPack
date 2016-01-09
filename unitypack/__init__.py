@@ -259,16 +259,14 @@ class ObjectPointer:
 
 	@property
 	def asset(self):
-		if self.file_id == 0:
-			return self.source_asset
-		return self.source_asset.asset_refs[self.file_id - 1].asset
+		return self.source_asset.asset_refs[self.file_id].asset
 
 
 class Asset:
 	def __init__(self):
 		self.objects = {}
 		self.adds = []
-		self.asset_refs = []
+		self.asset_refs = [self]
 		self.types = {}
 
 	def __repr__(self):
