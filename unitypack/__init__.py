@@ -159,6 +159,10 @@ class ObjectInfo:
 			return "<N/A>"
 
 	def load(self, buf):
+		if self.asset.format >= 14:
+			self.path_id = buf.read_int64()
+		else:
+			self.asset.path_id = buf.read_int()
 		self.data_offset = buf.read_uint() + self.asset.data_offset
 		self.size = buf.read_uint()
 		self.type_id = buf.read_int()
@@ -303,10 +307,6 @@ class Asset:
 		for i in range(self.num_objects):
 			if self.format >= 14:
 				buf.align()
-				path_id = buf.read_int64()
-			else:
-				path_id = buf.read_int()
-
 			obj = ObjectInfo(self)
 			obj.load(buf)
 
@@ -315,10 +315,10 @@ class Asset:
 			elif obj.type not in self.types:
 				self.types[obj.type_id] = TypeMetadata.default().type_trees[obj.class_id]
 
-			if path_id in self.objects:
+			if obj.path_id in self.objects:
 				raise ValueError("Duplicate asset object: %r" % (obj))
 
-			self.objects[path_id] = obj
+			self.objects[obj.path_id] = obj
 
 		if self.format >= 11:
 			num_adds = buf.read_uint()
