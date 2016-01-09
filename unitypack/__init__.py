@@ -159,10 +159,7 @@ class ObjectInfo:
 			return "<N/A>"
 
 	def load(self, buf):
-		if self.asset.format >= 14:
-			self.path_id = buf.read_int64()
-		else:
-			self.asset.path_id = buf.read_int()
+		self.path_id = self.asset.read_id(buf)
 		self.data_offset = buf.read_uint() + self.asset.data_offset
 		self.size = buf.read_uint()
 		self.type_id = buf.read_int()
@@ -253,10 +250,7 @@ class ObjectPointer:
 
 	def load(self, buf):
 		self.file_id = buf.read_int()
-		if self.source_asset.format >= 14:
-			self.path_id = buf.read_int64()
-		else:
-			self.path_id = buf.read_int()
+		self.path_id = self.source_asset.read_id(buf)
 
 	def __repr__(self):
 		return "%s(file_id=%r, path_id=%r)" % (
@@ -327,9 +321,7 @@ class Asset:
 			for i in range(num_adds):
 				if self.format >= 14:
 					buf.align()
-					id = buf.read_int64()
-				else:
-					id = buf.read_int()
+				id = self.read_id(buf)
 				self.adds.append((id, buf.read_int()))
 
 		self.num_refs = buf.read_uint()
@@ -340,6 +332,12 @@ class Asset:
 
 		unk_string = buf.read_string()
 		assert not unk_string, unk_string
+
+	def read_id(self, buf):
+		if self.format >= 14:
+			return buf.read_int64()
+		else:
+			return buf.read_int()
 
 	def register_object(self, obj):
 		if obj.type in self.tree.type_trees:
