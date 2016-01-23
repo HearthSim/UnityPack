@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from binascii import hexlify
 from io import BytesIO
 from urllib.parse import urlparse
@@ -229,7 +230,11 @@ class ObjectInfo:
 					result = AudioClip(result)
 				if t == "StreamedResource":
 					result = StreamedResource(result)
-					result.asset = self.asset.bundle.get_asset(result.source)
+					if self.asset.bundle:
+						result.asset = self.asset.bundle.get_asset(result.source)
+					else:
+						logging.warning("StreamedResource not available without bundle")
+						result.asset = None
 				elif t == "TextAsset":
 					result = TextAsset(result)
 				elif t == "Shader":
@@ -289,6 +294,7 @@ class Asset:
 		self.adds = []
 		self.asset_refs = [self]
 		self.types = {}
+		self.bundle = None
 
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
