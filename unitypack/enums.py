@@ -30,4 +30,6 @@ class RuntimePlatform(IntEnum):
 	PSP2 = 24
 	PS4 = 25
 	PSM = 26
+	PSMPlayer = 26
 	XboxOne = 27
+	SamsungTVPlayer = 28
