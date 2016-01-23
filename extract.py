@@ -13,13 +13,17 @@ SUPPORTED_FORMATS = (
 )
 
 
-def write_to_file(filename, contents, mode="w"):
+def get_output_path(filename):
 	basedir = "out"
-
-	if not os.path.exists(basedir):
-		os.makedirs(basedir)
-
 	path = os.path.join(basedir, filename)
+	dirs = os.path.dirname(path)
+	if not os.path.exists(dirs):
+		os.makedirs(dirs)
+	return path
+
+
+def write_to_file(filename, contents, mode="w"):
+	path = get_output_path(filename)
 	with open(path, mode) as f:
 		written = f.write(contents)
 
@@ -47,7 +51,8 @@ def handle_asset(asset):
 		elif obj.type == "Texture2D":
 			print("Decoding %r" % (d))
 			img = ImageOps.flip(d.image)
-			img.save("out/%s.png" % (d.name))
+			path = get_output_path(d.name + ".png")
+			img.save(path)
 
 
 def main():
