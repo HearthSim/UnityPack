@@ -26,6 +26,30 @@ def write_to_file(filename, contents, mode="w"):
 	print("Written %i bytes to %r" % (written, path))
 
 
+def handle_asset(asset):
+	print(asset)
+	for id, obj in asset.objects.items():
+		if obj.type not in SUPPORTED_FORMATS:
+			print("Skipping %r" % (obj))
+			continue
+
+		d = obj.read()
+
+		if obj.type == "AudioClip":
+			write_to_file(d.name + ".fsb", d.data, mode="wb")
+
+		elif obj.type == "Shader":
+			write_to_file(d.name + ".cg", d.script)
+
+		elif obj.type == "TextAsset":
+			write_to_file(d.name + ".txt", d.script)
+
+		elif obj.type == "Texture2D":
+			print("Decoding %r" % (d))
+			img = ImageOps.flip(d.image)
+			img.save("out/%s.png" % (d.name))
+
+
 def main():
 	files = sys.argv[1:]
 	for file in files:
@@ -33,27 +57,7 @@ def main():
 			bundle = unitypack.load(f)
 
 		for asset in bundle.assets:
-			print(asset)
-			for id, obj in asset.objects.items():
-				if obj.type not in SUPPORTED_FORMATS:
-					print("Skipping %r" % (obj))
-					continue
-
-				d = obj.read()
-
-				if obj.type == "AudioClip":
-					write_to_file(d.name + ".fsb", d.data, mode="wb")
-
-				elif obj.type == "Shader":
-					write_to_file(d.name + ".cg", d.script)
-
-				elif obj.type == "TextAsset":
-					write_to_file(d.name + ".txt", d.script)
-
-				elif obj.type == "Texture2D":
-					print("Decoding %r" % (d))
-					img = ImageOps.flip(d.image)
-					img.save("out/%s.png" % (d.name))
+			handle_asset(asset)
 
 
 if __name__ == "__main__":
