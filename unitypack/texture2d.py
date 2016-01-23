@@ -68,6 +68,15 @@ class TextureFormat(IntEnum):
 		return "RGBA"
 
 
+IMPLEMENTED_FORMATS = (
+	TextureFormat.RGB24,
+	TextureFormat.RGBA32,
+	TextureFormat.ARGB32,
+	TextureFormat.DXT1,
+	TextureFormat.DXT5,
+)
+
+
 class Texture2D(Object):
 	data = field("image data")
 	height = field("m_Height")
@@ -93,18 +102,17 @@ class Texture2D(Object):
 			codec = dds.dxt1
 		elif self.format == TextureFormat.DXT5:
 			codec = dds.dxt5
-		elif self.format in (TextureFormat.RGB24, TextureFormat.RGBA32):
-			return self.data
-		elif self.format == TextureFormat.ARGB32:
-			return self.data
 		else:
-			raise NotImplementedError("Unimplemented format %r" % (self.format))
+			return self.data
 
 		return codec(self.data, self.width, self.height)
 
 	@property
 	def image(self):
 		from PIL import Image
+
+		if self.format not in IMPLEMENTED_FORMATS:
+			raise NotImplementedError("Unimplemented format %r" % (self.format))
 
 		raw_mode = self.format.pixel_format
 		mode = "RGB" if raw_mode == "RGB" else "RGBA"
