@@ -5,6 +5,7 @@ from io import BytesIO
 from urllib.parse import urlparse
 from uuid import UUID
 from .audioclip import AudioClip, StreamedResource
+from .enums import RuntimePlatform
 from .textasset import TextAsset, Shader
 from .texture2d import Texture2D
 from .utils import BinaryReader
@@ -121,9 +122,7 @@ class TypeMetadata:
 	def load(self, buf):
 		offset = buf.tell()
 		self.generator_version = buf.read_string()
-		self.target_platform = buf.read_uint()
-
-		assert self.target_platform == 5  # Windows. RuntimePlatform?
+		self.target_platform = RuntimePlatform(buf.read_uint())
 
 		# if format >= 13
 		self.has_type_trees = buf.read_boolean()
