@@ -59,17 +59,13 @@ class TextureFormat(IntEnum):
 	ASTC_RGBA_10x10 = 58
 	ASTC_RGBA_12x12 = 59
 
-
-def argb_to_rgba(data, width, height):
-	pixels = len(data) // 16
-	data = BytesIO(data)
-	ret = bytearray()
-
-	for i in range(pixels):
-		a, r, g, b = struct.unpack("<4I", data.read(16))
-		ret += struct.pack("<4I", r, g, b, a)
-
-	return ret
+	@property
+	def pixel_format(self):
+		if self == TextureFormat.RGB24:
+			return "RGB"
+		elif self == TextureFormat.ARGB32:
+			return "ARGB"
+		return "RGBA"
 
 
 class Texture2D(Object):
@@ -98,9 +94,9 @@ class Texture2D(Object):
 		elif self.format == TextureFormat.DXT5:
 			codec = dds.dxt5
 		elif self.format in (TextureFormat.RGB24, TextureFormat.RGBA32):
-			codec = lambda data, w, h: data
+			return self.data
 		elif self.format == TextureFormat.ARGB32:
-			codec = argb_to_rgba
+			return self.data
 		else:
 			raise NotImplementedError("Unimplemented format %r" % (self.format))
 
@@ -110,12 +106,10 @@ class Texture2D(Object):
 	def image(self):
 		from PIL import Image
 
-		if self.format == TextureFormat.RGB24:
-			mode = "RGB"
-		else:
-			mode = "RGBA"
+		raw_mode = self.format.pixel_format
+		mode = "RGB" if raw_mode == "RGB" else "RGBA"
 
 		size = (self.width, self.height)
-		img = Image.frombytes(mode, size, bytes(self.decoded_data))
+		img = Image.frombytes(mode, size, bytes(self.decoded_data), "raw", raw_mode)
 
 		return img
