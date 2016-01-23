@@ -272,6 +272,10 @@ class Asset:
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
 
+	@property
+	def is_resource(self):
+		return self.name.endswith(".resource")
+
 	def load(self, buf):
 		offset = buf.tell()
 		self.name = buf.read_string()
@@ -284,10 +288,8 @@ class Asset:
 		buf.seek(ofs)
 
 		# Skip resource asset files
-		if self.name.endswith("resource"):
-			return
-
-		self.prepare()
+		if not self.is_resource:
+			self.prepare()
 
 	def prepare(self):
 		buf = BinaryReader(self.data, endian=">")
