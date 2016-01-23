@@ -296,12 +296,11 @@ class Asset:
 		self.file_size = buf.read_uint()
 		self.format = buf.read_uint()
 		self.data_offset = buf.read_uint()
-		self.endianness = buf.read_uint()
 
-		if self.endianness == 0:
-			buf.endian = "<"
-
-		assert self.format >= 9
+		if self.format >= 9:
+			self.endianness = buf.read_uint()
+			if self.endianness == 0:
+				buf.endian = "<"
 
 		self.tree = TypeMetadata()
 		self.tree.load(buf)
@@ -322,11 +321,12 @@ class Asset:
 				id = self.read_id(buf)
 				self.adds.append((id, buf.read_int()))
 
-		self.num_refs = buf.read_uint()
-		for i in range(self.num_refs):
-			ref = AssetRef()
-			ref.load(buf)
-			self.asset_refs.append(ref)
+		if self.format >= 14:
+			num_refs = buf.read_uint()
+			for i in range(num_refs):
+				ref = AssetRef()
+				ref.load(buf)
+				self.asset_refs.append(ref)
 
 		unk_string = buf.read_string()
 		assert not unk_string, unk_string
