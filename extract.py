@@ -53,6 +53,12 @@ def handle_asset(asset):
 def main():
 	files = sys.argv[1:]
 	for file in files:
+		if file.endswith(".assets"):
+			with open(file, "rb") as f:
+				asset = unitypack.Asset.from_file(f)
+			handle_asset(asset)
+			continue
+
 		with open(file, "rb") as f:
 			bundle = unitypack.load(f)
 

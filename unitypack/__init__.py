@@ -277,6 +277,14 @@ class Asset:
 		buf.seek(ofs)
 		return ret
 
+	@classmethod
+	def from_file(cls, file):
+		ret = cls()
+		ret.name = file.name
+		ret.data = BinaryReader(BytesIO(file.read()), endian=">")
+		ret.load(ret.data)
+		return ret
+
 	def __init__(self):
 		self.objects = {}
 		self.adds = []
