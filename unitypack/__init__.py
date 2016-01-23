@@ -263,6 +263,20 @@ class ObjectPointer:
 
 
 class Asset:
+	@classmethod
+	def from_bundle(cls, buf):
+		ret = cls()
+		offset = buf.tell()
+		ret.name = buf.read_string()
+		header_size = buf.read_uint()
+		size = buf.read_uint()
+
+		ofs = buf.tell()
+		buf.seek(offset + header_size - 4)
+		ret.data = BinaryReader(BytesIO(buf.read(size)), endian=">")
+		buf.seek(ofs)
+		return ret
+
 	def __init__(self):
 		self.objects = {}
 		self.adds = []
@@ -277,23 +291,6 @@ class Asset:
 		return self.name.endswith(".resource")
 
 	def load(self, buf):
-		offset = buf.tell()
-		self.name = buf.read_string()
-		self.header_size = buf.read_uint()
-		self.size = buf.read_uint()
-
-		ofs = buf.tell()
-		buf.seek(offset + self.header_size - 4)
-		self.data = BytesIO(buf.read(self.size))
-		buf.seek(ofs)
-
-		# Skip resource asset files
-		if not self.is_resource:
-			self.prepare()
-
-	def prepare(self):
-		buf = BinaryReader(self.data, endian=">")
-
 		self.metadata_size = buf.read_uint()
 		self.file_size = buf.read_uint()
 		self.format = buf.read_uint()
@@ -398,8 +395,9 @@ class AssetBundle:
 		buf.seek(self.header_size)
 		self.num_assets = buf.read_int()
 		for i in range(self.num_assets):
-			asset = Asset()
-			asset.load(buf)
+			asset = Asset.from_bundle(buf)
+			if not asset.is_resource:
+				asset.load(asset.data)
 			asset.bundle = self
 			self.assets.append(asset)
 
