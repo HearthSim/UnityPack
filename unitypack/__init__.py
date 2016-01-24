@@ -276,7 +276,10 @@ class Asset:
 		size = buf.read_uint()
 
 		ofs = buf.tell()
-		buf.seek(offset + header_size - 4)
+		if ret.is_resource:
+			buf.seek(offset + header_size - 4 - len(ret.name))
+		else:
+			buf.seek(offset + header_size - 4)
 		ret.data = BinaryReader(BytesIO(buf.read(size)), endian=">")
 		buf.seek(ofs)
 		return ret
