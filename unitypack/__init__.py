@@ -388,6 +388,10 @@ class AssetBundle:
 	def __init__(self):
 		self.assets = []
 
+	@property
+	def compressed(self):
+		return self.signature == SIGNATURE_WEB
+
 	def load(self, file):
 		buf = BinaryReader(file, endian=">")
 
