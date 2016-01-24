@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import fsb5
 import os
 import sys
 import unitypack
@@ -40,7 +41,13 @@ def handle_asset(asset):
 		d = obj.read()
 
 		if obj.type == "AudioClip":
-			write_to_file(d.name + ".fsb", d.data, mode="wb")
+			audio = fsb5.FSB5(d.data)
+			assert len(audio.samples) == 1
+			try:
+				write_to_file(d.name + "." + audio.get_sample_extension(), audio.rebuild_sample(audio.samples[0]), mode="wb")
+			except (ValueError, NotImplementedError, OSError) as e:
+				print('Got error: "%s" while rebuilding audio sample. Writing raw fsb instead' % e)
+				write_to_file(d.name + ".fsb", d.data, mode="wb")
 
 		elif obj.type == "Shader":
 			write_to_file(d.name + ".cg", d.script)
