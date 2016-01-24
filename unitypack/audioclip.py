@@ -1,3 +1,4 @@
+import logging
 from enum import IntEnum
 from .object import Object, field
 
@@ -45,5 +46,8 @@ class StreamedResource(Object):
 	size = field("m_Size")
 
 	def get_data(self):
+		if not self.asset:
+			logging.warning("No data available for StreamedResource")
+			return b""
 		self.asset.data.seek(self.offset)
 		return self.asset.data.read(self.size)

@@ -41,6 +41,9 @@ def handle_asset(asset):
 		d = obj.read()
 
 		if obj.type == "AudioClip":
+			if not d.data:
+				# eg. StreamedResource not available
+				continue
 			af = FSB5(d.data)
 			for i, sample in enumerate(af.samples):
 				if i > 0:
