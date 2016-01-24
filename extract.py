@@ -3,6 +3,7 @@ import os
 import sys
 import unitypack
 from PIL import ImageOps
+from fsb5 import FSB5
 
 
 SUPPORTED_FORMATS = (
@@ -40,7 +41,13 @@ def handle_asset(asset):
 		d = obj.read()
 
 		if obj.type == "AudioClip":
-			write_to_file(d.name + ".fsb", d.data, mode="wb")
+			af = FSB5(d.data)
+			for i, sample in enumerate(af.samples):
+				if i > 0:
+					filename = "%s-%i.%s" % (d.name, i, af.get_sample_extension())
+				else:
+					filename = "%s.%s" % (d.name, af.get_sample_extension())
+				write_to_file(filename, af.rebuild_sample(sample), mode="wb")
 
 		elif obj.type == "Shader":
 			write_to_file(d.name + ".cg", d.script)
