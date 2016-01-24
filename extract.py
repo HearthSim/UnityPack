@@ -60,13 +60,14 @@ def handle_asset(asset):
 
 		elif obj.type == "Texture2D":
 			filename = d.name + ".png"
-			if not d.image:
+			image = d.image
+			if image is None:
 				print("WARNING: %s is an empty image" % (filename))
 				write_to_file(filename, "")
 			else:
 				print("Decoding %r" % (d))
-				img = ImageOps.flip(d.image)
-				path = get_output_path(d.name + ".png")
+				img = ImageOps.flip(image)
+				path = get_output_path(filename)
 				img.save(path)
 
 
