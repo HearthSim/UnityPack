@@ -120,10 +120,12 @@ class Texture2D(Object):
 		if self.format not in IMPLEMENTED_FORMATS:
 			raise NotImplementedError("Unimplemented format %r" % (self.format))
 
+		size = (self.width, self.height)
 		raw_mode = self.format.pixel_format
 		mode = "RGB" if raw_mode == "RGB" else "RGBA"
+		data = bytes(self.decoded_data)
 
-		size = (self.width, self.height)
-		img = Image.frombytes(mode, size, bytes(self.decoded_data), "raw", raw_mode)
+		if not data and size == (0, 0):
+			return None
 
-		return img
+		return Image.frombytes(mode, size, data, "raw", raw_mode)
