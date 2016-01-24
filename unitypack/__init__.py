@@ -300,6 +300,7 @@ class Asset:
 		self.asset_refs = [self]
 		self.types = {}
 		self.bundle = None
+		self.name = ""
 
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
