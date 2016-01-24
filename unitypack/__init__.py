@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import lzma
 from binascii import hexlify
 from io import BytesIO
 from urllib.parse import urlparse
@@ -271,17 +272,26 @@ class Asset:
 	def from_bundle(cls, bundle, buf):
 		ret = cls()
 		offset = buf.tell()
-		ret.name = buf.read_string()
-		header_size = buf.read_uint()
-		size = buf.read_uint()
+		if not bundle.compressed:
+			ret.name = buf.read_string()
+			header_size = buf.read_uint()
+			size = buf.read_uint()
+		else:
+			header_size = bundle.asset_header_size
 
 		# FIXME: this offset needs to be explored more
 		ofs = buf.tell()
-		if ret.is_resource:
-			buf.seek(offset + header_size - 4 - len(ret.name))
+		if bundle.compressed:
+			dec = lzma.LZMADecompressor()
+			data = dec.decompress(buf.read())
+			data = BytesIO(data[header_size:])
 		else:
-			buf.seek(offset + header_size - 4)
-		ret.data = BinaryReader(BytesIO(buf.read(size)), endian=">")
+			if ret.is_resource:
+				buf.seek(offset + header_size - 4 - len(ret.name))
+			else:
+				buf.seek(offset + header_size - 4)
+			data = BytesIO(buf.read())
+		ret.data = BinaryReader(data, endian=">")
 		buf.seek(ofs)
 		ret.bundle = bundle
 		return ret
@@ -408,20 +418,23 @@ class AssetBundle:
 		self.bundle_count = buf.read_int()
 
 		if self.format_version >= 2:
-			self.complete_file_size = buf.read_uint()
+			self.bundle_size = buf.read_uint()  # without header_size
 
 			if self.format_version >= 3:
-				self.data_header_size = buf.read_uint()
+				self.uncompressed_bundle_size = buf.read_uint()  # without header_size
 
 		if self.header_size >= 60:
-			self.uncompressed_file_size = buf.read_uint()
-			self.bundle_header_size = buf.read_uint()
+			self.compressed_file_size = buf.read_uint()  # with header_size
+			self.asset_header_size = buf.read_uint()
 
 		assert self.signature in (SIGNATURE_RAW, SIGNATURE_WEB)
 
 		# Preload assets
 		buf.seek(self.header_size)
-		self.num_assets = buf.read_int()
+		if not self.compressed:
+			self.num_assets = buf.read_int()
+		else:
+			self.num_assets = 1
 		for i in range(self.num_assets):
 			asset = Asset.from_bundle(self, buf)
 			if not asset.is_resource:
