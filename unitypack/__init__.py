@@ -268,7 +268,7 @@ class ObjectPointer:
 
 class Asset:
 	@classmethod
-	def from_bundle(cls, buf):
+	def from_bundle(cls, bundle, buf):
 		ret = cls()
 		offset = buf.tell()
 		ret.name = buf.read_string()
@@ -283,6 +283,7 @@ class Asset:
 			buf.seek(offset + header_size - 4)
 		ret.data = BinaryReader(BytesIO(buf.read(size)), endian=">")
 		buf.seek(ofs)
+		ret.bundle = bundle
 		return ret
 
 	@classmethod
@@ -421,10 +422,9 @@ class AssetBundle:
 		buf.seek(self.header_size)
 		self.num_assets = buf.read_int()
 		for i in range(self.num_assets):
-			asset = Asset.from_bundle(buf)
+			asset = Asset.from_bundle(self, buf)
 			if not asset.is_resource:
 				asset.load(asset.data)
-			asset.bundle = self
 			self.assets.append(asset)
 
 	def get_asset(self, url):
