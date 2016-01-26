@@ -43,7 +43,7 @@ class BinaryReader:
 		return b"".join(ret)
 
 	def read_boolean(self):
-		return struct.unpack(self.endian + "b", self.read(1))[0]
+		return bool(struct.unpack(self.endian + "b", self.read(1))[0])
 
 	def read_byte(self):
 		return struct.unpack(self.endian + "b", self.read(1))[0]
