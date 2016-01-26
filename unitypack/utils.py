@@ -32,7 +32,7 @@ class BinaryReader:
 		except UnicodeDecodeError:
 			return ret
 
-	def read_cstring(self):
+	def read_cstring(self) -> bytes:
 		ret = []
 		c = b""
 		while c != b"\0":
@@ -42,23 +42,23 @@ class BinaryReader:
 				raise ValueError("Unterminated string: %r" % (ret))
 		return b"".join(ret)
 
-	def read_boolean(self):
+	def read_boolean(self) -> bool:
 		return bool(struct.unpack(self.endian + "b", self.read(1))[0])
 
-	def read_byte(self):
+	def read_byte(self) -> int:
 		return struct.unpack(self.endian + "b", self.read(1))[0]
 
-	def read_int16(self):
+	def read_int16(self) -> int:
 		return struct.unpack(self.endian + "h", self.read(2))[0]
 
-	def read_int(self):
+	def read_int(self) -> int:
 		return struct.unpack(self.endian + "i", self.read(4))[0]
 
-	def read_uint(self):
+	def read_uint(self) -> int:
 		return struct.unpack(self.endian + "I", self.read(4))[0]
 
-	def read_float(self):
+	def read_float(self) -> float:
 		return struct.unpack(self.endian + "f", self.read(4))[0]
 
-	def read_int64(self):
+	def read_int64(self) -> int:
 		return struct.unpack(self.endian + "q", self.read(8))[0]
