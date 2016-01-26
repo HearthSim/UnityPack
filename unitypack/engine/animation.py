@@ -20,6 +20,19 @@ class AnimationClip(Motion):
 	pass
 
 
+class RuntimeAnimatorController(Object):
+	animation_clips = field("m_AnimationClips")
+
+
+class AnimatorController(RuntimeAnimatorController):
+	controller = field("m_Controller")
+	controller_size = field("m_ControllerSize")
+	multithreaded_state_machine = field("m_MultiThreadedStateMachine")
+	state_machine_behaviours = field("m_StateMachineBehaviours")
+	state_machine_behaviour_vector_description = field("m_StateMachineBehaviourVectorDescription")
+	TOS = field("m_TOS")
+
+
 class AnimatorCullingMode(IntEnum):
 	AlwaysAnimate = 0
 	CullUpdateTransforms = 1
