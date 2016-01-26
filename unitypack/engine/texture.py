@@ -89,6 +89,15 @@ IMPLEMENTED_FORMATS = (
 )
 
 
+class Sprite(Object):
+	border = field("m_Border")
+	extrude = field("m_Extrude")
+	offset = field("m_Offset")
+	rd = field("m_RD")
+	rect = field("m_Rect")
+	pixels_per_unit = field("m_PixelsToUnits")
+
+
 class Material(Object):
 	pass
 

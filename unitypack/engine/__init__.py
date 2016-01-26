@@ -6,4 +6,4 @@ from .object import GameObject
 from .particle import EllipsoidParticleEmitter, ParticleEmitter, ParticleSystem
 from .renderer import MeshRenderer, Renderer
 from .textasset import TextAsset, Shader
-from .texture import Material, Texture2D
+from .texture import Material, Sprite, Texture2D
