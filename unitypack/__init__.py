@@ -266,7 +266,10 @@ class ObjectPointer:
 
 	@property
 	def asset(self):
-		return self.source_asset.asset_refs[self.file_id].asset
+		return self.source_asset.asset_refs[self.file_id]
+
+	def resolve(self):
+		return self.asset.objects[self.path_id]
 
 
 class Asset:
