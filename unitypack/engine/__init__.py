@@ -1,5 +1,5 @@
 from .animation import Animation, AnimationClip, Animator, AnimatorController, Motion, RuntimeAnimatorController
-from .audioclip import AudioClip, StreamedResource
+from .audio import AudioClip, AudioSource, StreamedResource
 from .component import Behaviour, Component, Transform
 from .mesh import Mesh, MeshFilter
 from .object import GameObject

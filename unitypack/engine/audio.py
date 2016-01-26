@@ -1,5 +1,6 @@
 import logging
 from enum import IntEnum
+from .component import Behaviour
 from .object import Object, field
 
 
@@ -17,6 +18,12 @@ class AudioFormat(IntEnum):
 	XMA = 22
 	VAG = 23
 	AUDIOQUEUE = 24
+
+
+class AudioRolloffMode(IntEnum):
+	Logarithmic = 0
+	Linear = 1
+	Custom = 2
 
 
 class AudioClip(Object):
@@ -38,6 +45,30 @@ class AudioClip(Object):
 		if not hasattr(self, "_data"):
 			self._data = self.resource.get_data()
 		return self._data
+
+
+class AudioSource(Behaviour):
+	bypass_effects = field("BypassEffects", bool)
+	bypass_listener_effects = field("BypassListenerEffects", bool)
+	bypass_reverb_zones = field("BypassReverbZones", bool)
+	clip = field("m_audioClip")
+	doppler_level = field("DopplerLevel")
+	loop = field("Loop", bool)
+	max_distance = field("MaxDistance")
+	min_distance = field("MinDistance")
+	mute = field("Mute", bool)
+	output_audio_mixer_group = field("OutputAudioMixerGroup")
+	pan_stereo = field("Pan2D")
+	pitch = field("m_Pitch")
+	play_on_awake = field("m_PlayOnAwake", bool)
+	priority = field("Priority")
+	rolloff_mode = field("rolloffMode", AudioRolloffMode)
+	volume = field("m_Volume")
+
+	rolloff_custom_curve = field("rolloffCustomCurve")
+	reverb_zone_mix_custom_curve = field("reverbZoneMixCustomCurve")
+	pan_level_custom_curve = field("panLevelCustomCurve")
+	spread_custom_curve = field("spreadCustomCurve")
 
 
 class StreamedResource(Object):
