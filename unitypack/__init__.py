@@ -16,6 +16,14 @@ from .utils import BinaryReader
 SIGNATURE_WEB = "UnityWeb"
 SIGNATURE_RAW = "UnityRaw"
 
+object_lookup = {
+	"AudioClip": AudioClip,
+	"Shader": Shader,
+	"StreamedResource": StreamedResource,
+	"TextAsset": TextAsset,
+	"Texture2D": Texture2D,
+}
+
 
 def get_asset(name):
 	return os.path.join(os.path.dirname(__file__), name)
@@ -31,6 +39,13 @@ with open(get_asset("classes.json"), "r") as f:
 
 def UnityClass(i):
 	return UNITY_CLASSES[str(i)]
+
+
+def load_object(clsname, obj):
+	if clsname in object_lookup:
+		obj = object_lookup[clsname](obj)
+
+	return obj
 
 
 class TypeTree:
@@ -227,21 +242,13 @@ class ObjectInfo:
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)
 
-				if t == "AudioClip":
-					result = AudioClip(result)
+				result = load_object(t, result)
 				if t == "StreamedResource":
-					result = StreamedResource(result)
 					if self.asset.bundle:
 						result.asset = self.asset.bundle.get_asset(result.source)
 					else:
 						logging.warning("StreamedResource not available without bundle")
 						result.asset = None
-				elif t == "TextAsset":
-					result = TextAsset(result)
-				elif t == "Shader":
-					result = Shader(result)
-				elif t == "Texture2D":
-					result = Texture2D(result)
 
 		if align or type.post_align:
 			buf.align()
