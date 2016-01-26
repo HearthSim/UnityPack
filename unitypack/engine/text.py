@@ -50,6 +50,14 @@ class TextAsset(Object):
 	path = field("m_PathName")
 	script = field("m_Script")
 
+	@property
+	def bytes(self):
+		return self.script
+
+	@property
+	def text(self):
+		return self.bytes.decode("utf-8")
+
 
 class Shader(Object):
 	dependencies = field("m_Dependencies")
