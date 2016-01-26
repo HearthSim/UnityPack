@@ -27,7 +27,10 @@ class BinaryReader:
 			ret = self.read_cstring()
 		else:
 			ret = struct.unpack(self.endian + "%is" % (size), self.read(size))[0]
-		return ret.decode(encoding)
+		try:
+			return ret.decode(encoding)
+		except UnicodeDecodeError:
+			return ret
 
 	def read_cstring(self):
 		ret = []

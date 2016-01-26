@@ -56,7 +56,10 @@ def handle_asset(asset):
 			write_to_file(d.name + ".cg", d.script)
 
 		elif obj.type == "TextAsset":
-			write_to_file(d.name + ".txt", d.script)
+			if isinstance(d.script, bytes):
+				write_to_file(d.name + ".bin", d.script, mode="wb")
+			else:
+				write_to_file(d.name + ".txt", d.script)
 
 		elif obj.type == "Texture2D":
 			filename = d.name + ".png"
