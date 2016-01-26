@@ -1,6 +1,9 @@
-def field(f, cast=None):
+def field(f, cast=None, **kwargs):
 	def _inner(self):
-		ret = self._obj[f]
+		if "default" in kwargs:
+			ret = self._obj.get(f, kwargs["default"])
+		else:
+			ret = self._obj[f]
 		if cast:
 			ret = cast(ret)
 		return ret
@@ -19,7 +22,7 @@ class Object:
 	def __str__(self):
 		return self.name
 
-	name = field("m_Name")
+	name = field("m_Name", default="")
 
 
 class GameObject(Object):
