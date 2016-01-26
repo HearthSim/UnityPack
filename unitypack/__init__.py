@@ -223,6 +223,7 @@ class ObjectInfo:
 			elif first_child and first_child.is_array:
 				align = first_child.post_align
 				size = buf.read_uint()
+				assert size < 10000000  # Sanity check
 				array_type = first_child.children[1]
 				if array_type.type in ("char", "UInt8"):
 					result = buf.read(size)
