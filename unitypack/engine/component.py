@@ -1,8 +1,12 @@
-from .object import Object
+from .object import Object, field
 
 
 class Component(Object):
-	pass
+	game_object = field("m_GameObject")
+
+
+class Behaviour(Component):
+	enabled = field("m_Enabled", bool)
 
 
 class Transform(Component):

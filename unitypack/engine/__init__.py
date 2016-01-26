@@ -1,6 +1,6 @@
-from .animation import AnimationClip, Motion
+from .animation import Animation, AnimationClip, Motion
 from .audioclip import AudioClip, StreamedResource
-from .component import Component, Transform
+from .component import Behaviour, Component, Transform
 from .mesh import Mesh, MeshFilter
 from .object import GameObject
 from .particle import EllipsoidParticleEmitter, ParticleEmitter, ParticleSystem
