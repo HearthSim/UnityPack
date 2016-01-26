@@ -442,6 +442,8 @@ class AssetBundle:
 			self.assets.append(asset)
 
 	def get_asset(self, url):
+		if not url:
+			return None
 		u = urlparse(url)
 		assert u.scheme == "archive"
 
