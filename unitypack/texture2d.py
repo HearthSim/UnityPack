@@ -86,10 +86,13 @@ IMPLEMENTED_FORMATS = (
 )
 
 
-class Texture2D(Object):
-	data = field("image data")
+class Texture(Object):
 	height = field("m_Height")
 	width = field("m_Width")
+
+
+class Texture2D(Texture):
+	data = field("image data")
 	lightmap_format = field("m_LightmapFormat")
 	texture_settings = field("m_TextureSettings")
 	color_space = field("m_ColorSpace")
