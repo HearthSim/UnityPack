@@ -29,8 +29,10 @@ class Renderer(Component):
 	sorting_order = field("m_SortingOrder")
 	use_light_probes = field("m_UseLightProbes", bool)
 	lightmap_index_dynamic = field("m_LightmapIndexDynamic")
+	lightmap_tiling_offset = field("m_LightmapTilingOffset")
 	lightmap_tiling_offset_dynamic = field("m_LightmapTilingOffsetDynamic")
 	static_batch_root = field("m_StaticBatchRoot")
+	subset_indices = field("m_SubsetIndices")
 
 	@property
 	def material(self):
@@ -56,6 +58,15 @@ class MeshRenderer(Component):
 	pass
 
 
+class ParticleRenderer(Renderer):
+	camera_velocity_scale = field("m_CameraVelocityScale")
+	length_scale = field("m_LengthScale")
+	max_particle_size = field("m_MaxParticleSize")
+	velocity_scale = field("m_VelocityScale")
+	stretch_particles = field("m_StretchParticles")
+	uv_animation = field("UV Animation")
+
+
 class ParticleSystemRenderer(Renderer):
 	camera_velocity_scale = field("m_CameraVelocityScale")
 	length_scale = field("m_LengthScale")
@@ -69,6 +80,3 @@ class ParticleSystemRenderer(Renderer):
 	sort_mode = field("m_SortMode", ParticleSystemSortMode)
 	sorting_fudge = field("m_SortingFudge")
 	velocity_scale = field("m_VelocityScale")
-
-	lightmap_tiling_offset = field("m_LightmapTilingOffset")
-	subset_indices = field("m_SubsetIndices")
