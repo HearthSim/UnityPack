@@ -86,6 +86,10 @@ IMPLEMENTED_FORMATS = (
 )
 
 
+class Material(Object):
+	pass
+
+
 class Texture(Object):
 	height = field("m_Height")
 	width = field("m_Width")
