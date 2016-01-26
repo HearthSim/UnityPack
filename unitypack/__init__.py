@@ -215,6 +215,8 @@ class ObjectInfo:
 			if t.startswith("PPtr<"):
 				result = ObjectPointer(self.asset)
 				result.load(buf)
+				if not result:
+					result = None
 
 			elif first_child and first_child.is_array:
 				align = first_child.post_align
@@ -249,6 +251,9 @@ class ObjectInfo:
 class ObjectPointer:
 	def __init__(self, asset):
 		self.source_asset = asset
+
+	def __bool__(self):
+		return not (self.file_id == 0 and self.path_id == 0)
 
 	def load(self, buf):
 		self.file_id = buf.read_int()
