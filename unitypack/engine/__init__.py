@@ -9,5 +9,5 @@ from .object import GameObject
 from .particle import EllipsoidParticleEmitter, ParticleEmitter, ParticleSystem
 from .physics import BoxCollider, BoxCollider2D, Collider, Collider2D, Rigidbody2D
 from .renderer import MeshRenderer, ParticleRenderer, ParticleSystemRenderer, Renderer
-from .textasset import TextAsset, Shader
+from .text import TextAsset, TextMesh, Shader
 from .texture import Material, Sprite, Texture2D
