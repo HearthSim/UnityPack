@@ -1,4 +1,4 @@
-from .animation import Animation, AnimationClip, Motion
+from .animation import Animation, AnimationClip, Animator, Motion
 from .audioclip import AudioClip, StreamedResource
 from .component import Behaviour, Component, Transform
 from .mesh import Mesh, MeshFilter
