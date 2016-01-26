@@ -17,3 +17,10 @@ class Object:
 		return "<%s %s>" % (self.__class__.__name__, self.name)
 
 	name = field("m_Name")
+
+
+class GameObject(Object):
+	active = field("m_IsActive")
+	component = field("m_Component")
+	layer = field("m_Layer")
+	tag = field("m_Tag")

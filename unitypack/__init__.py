@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from uuid import UUID
 from .audioclip import AudioClip, StreamedResource
 from .enums import RuntimePlatform
+from .object import GameObject
 from .textasset import TextAsset, Shader
 from .texture2d import Texture2D
 from .utils import BinaryReader
@@ -18,6 +19,7 @@ SIGNATURE_RAW = "UnityRaw"
 
 object_lookup = {
 	"AudioClip": AudioClip,
+	"GameObject": GameObject,
 	"Shader": Shader,
 	"StreamedResource": StreamedResource,
 	"TextAsset": TextAsset,
