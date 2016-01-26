@@ -193,8 +193,10 @@ class ObjectInfo:
 			result = buf.read_boolean()
 		elif t == "UInt8":
 			result = buf.read_byte()
-		elif t == "UInt16":
+		elif t == "SInt16":
 			result = buf.read_int16()
+		elif t == "UInt16":
+			result = buf.read_uint16()
 		elif t == "UInt64":
 			result = buf.read_int64()
 		elif t == "unsigned int":

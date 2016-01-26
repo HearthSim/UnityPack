@@ -51,6 +51,9 @@ class BinaryReader:
 	def read_int16(self) -> int:
 		return struct.unpack(self.endian + "h", self.read(2))[0]
 
+	def read_uint16(self) -> int:
+		return struct.unpack(self.endian + "H", self.read(2))[0]
+
 	def read_int(self) -> int:
 		return struct.unpack(self.endian + "i", self.read(4))[0]
 
