@@ -1,4 +1,7 @@
-from .animation import Animation, AnimationClip, Animator, AnimatorController, Motion, RuntimeAnimatorController
+from .animation import (
+	Animation, AnimationClip, Animator, AnimatorController, Motion,
+	ParticleAnimator, RuntimeAnimatorController
+)
 from .audio import AudioClip, AudioSource, StreamedResource
 from .component import Behaviour, Component, Transform
 from .mesh import Mesh, MeshFilter

@@ -1,5 +1,5 @@
 from enum import IntEnum
-from .component import Behaviour
+from .component import Behaviour, Component
 from .object import Object, field
 
 
@@ -55,3 +55,29 @@ class Animator(Behaviour):
 	has_transform_hierarchy = field("m_HasTransformHierarchy", bool)
 	linear_velocity_binding = field("m_LinearVelocityBlending", bool)
 	update_mode = field("m_UpdateMode", AnimatorUpdateMode)
+
+
+class ParticleAnimator(Component):
+	autodestruct = field("autodestruct", bool)
+	damping = field("damping")
+	does_animate_color = field("Does Animate Color?", bool)
+	force = field("force")
+	local_rotation_axis = field("localRotationAxis")
+	rnd_force = field("rndForce")
+	stop_simulation = field("stopSimulation")
+	size_grow = field("sizeGrow")
+	world_rotation_axis = field("worldRotationAxis")
+
+	@property
+	def color_animation(self):
+		ret = []
+		i = 0
+		while True:
+			k = "colorAnimation[%i]" % (i)
+			if k in self._obj:
+				ret.append(self._obj[k])
+			else:
+				break
+			i += 1
+
+		return ret
