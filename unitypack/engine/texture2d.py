@@ -1,8 +1,8 @@
 import struct
 from enum import IntEnum
 from io import BytesIO
-from . import dds
 from .object import Object, field
+from .. import dds
 
 
 class TextureFormat(IntEnum):

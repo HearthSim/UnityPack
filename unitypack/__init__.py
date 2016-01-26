@@ -6,25 +6,13 @@ from binascii import hexlify
 from io import BytesIO
 from urllib.parse import urlparse
 from uuid import UUID
-from .audioclip import AudioClip, StreamedResource
+from . import engine as UnityEngine
 from .enums import RuntimePlatform
-from .object import GameObject
-from .textasset import TextAsset, Shader
-from .texture2d import Texture2D
 from .utils import BinaryReader
 
 
 SIGNATURE_WEB = "UnityWeb"
 SIGNATURE_RAW = "UnityRaw"
-
-object_lookup = {
-	"AudioClip": AudioClip,
-	"GameObject": GameObject,
-	"Shader": Shader,
-	"StreamedResource": StreamedResource,
-	"TextAsset": TextAsset,
-	"Texture2D": Texture2D,
-}
 
 
 def get_asset(name):
@@ -44,8 +32,8 @@ def UnityClass(i):
 
 
 def load_object(clsname, obj):
-	if clsname in object_lookup:
-		obj = object_lookup[clsname](obj)
+	if hasattr(UnityEngine, clsname):
+		obj = getattr(UnityEngine, clsname)(obj)
 
 	return obj
 
