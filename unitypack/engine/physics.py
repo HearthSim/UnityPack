@@ -3,6 +3,16 @@ from .component import Behaviour, Component
 from .object import field
 
 
+class Collider(Component):
+	material = field("m_Material")
+	is_trigger = field("m_IsTrigger", bool)
+
+
+class BoxCollider(Collider):
+	center = field("m_Center")
+	size = field("m_Size")
+
+
 class Collider2D(Behaviour):
 	is_trigger = field("m_IsTrigger")
 	material = field("m_Material")
