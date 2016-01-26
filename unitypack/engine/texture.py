@@ -65,6 +65,8 @@ class TextureFormat(IntEnum):
 			return "RGB"
 		elif self == TextureFormat.ARGB32:
 			return "ARGB"
+		elif self == TextureFormat.RGB565:
+			return "RGBA;15"
 		elif self == TextureFormat.Alpha8:
 			return "A"
 		elif self == TextureFormat.RGBA4444:
@@ -78,6 +80,7 @@ IMPLEMENTED_FORMATS = (
 	TextureFormat.Alpha8,
 	TextureFormat.ARGB4444,
 	TextureFormat.RGBA4444,
+	TextureFormat.RGB565,
 	TextureFormat.RGB24,
 	TextureFormat.RGBA32,
 	TextureFormat.ARGB32,
