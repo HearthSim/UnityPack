@@ -28,7 +28,7 @@ with open(get_asset("classes.json"), "r") as f:
 
 
 def UnityClass(i):
-	return UNITY_CLASSES[str(i)]
+	return UNITY_CLASSES.get(str(i), "<Unknown #%i>" % (i))
 
 
 def load_object(clsname, obj):
