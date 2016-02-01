@@ -8,6 +8,7 @@ from fsb5 import FSB5
 
 SUPPORTED_FORMATS = (
 	"AudioClip",
+	"MovieTexture",
 	"Shader",
 	"TextAsset",
 	"Texture2D",
@@ -51,6 +52,10 @@ def handle_asset(asset):
 				else:
 					filename = "%s.%s" % (d.name, af.get_sample_extension())
 				write_to_file(filename, af.rebuild_sample(sample), mode="wb")
+
+		elif obj.type == "MovieTexture":
+			filename = d.name + ".ogv"
+			write_to_file(filename, d.movie_data, mode="wb")
 
 		elif obj.type == "Shader":
 			write_to_file(d.name + ".cg", d.script)
