@@ -5,6 +5,7 @@ from .animation import (
 from .audio import AudioClip, AudioSource, StreamedResource
 from .component import Behaviour, Component, Transform
 from .mesh import Mesh, MeshFilter
+from .movie import MovieTexture
 from .object import GameObject
 from .particle import EllipsoidParticleEmitter, MeshParticleEmitter, ParticleEmitter, ParticleSystem
 from .physics import BoxCollider, BoxCollider2D, Collider, Collider2D, Rigidbody2D
