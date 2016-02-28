@@ -11,6 +11,11 @@ from .enums import RuntimePlatform
 from .utils import BinaryReader
 
 
+__author__ = "Jerome Leclanche"
+__email__ = "jerome@leclan.ch"
+__version__ = "0.1"
+
+
 SIGNATURE_WEB = "UnityWeb"
 SIGNATURE_RAW = "UnityRaw"
 
