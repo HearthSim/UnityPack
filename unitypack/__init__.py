@@ -378,9 +378,9 @@ class Asset:
 			return buf.read_int()
 
 	def register_object(self, obj):
-		if obj.type in self.tree.type_trees:
+		if obj.type_id in self.tree.type_trees:
 			self.types[obj.type_id] = self.tree.type_trees[obj.type_id]
-		elif obj.type not in self.types:
+		elif obj.type_id not in self.types:
 			tree = TypeMetadata.default().type_trees
 			if obj.class_id in tree:
 				self.types[obj.type_id] = TypeMetadata.default().type_trees[obj.class_id]
