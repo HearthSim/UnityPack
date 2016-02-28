@@ -63,7 +63,7 @@ class TypeTree:
 
 	@property
 	def post_align(self):
-		return self.flags & 0x4000
+		return bool(self.flags & 0x4000)
 
 	def load_blob(self, buf):
 		num_nodes = buf.read_uint()
