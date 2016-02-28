@@ -66,27 +66,18 @@ class TypeTree:
 		return self.flags & 0x4000
 
 	def load_blob(self, buf):
-		self.num_nodes = buf.read_uint()
+		num_nodes = buf.read_uint()
 		self.buffer_bytes = buf.read_uint()
-		node_data = BytesIO(buf.read(24 * self.num_nodes))
+		node_data = BytesIO(buf.read(24 * num_nodes))
 		self.data = buf.read(self.buffer_bytes)
 
 		parents = [self]
 
 		buf = BinaryReader(node_data)
 
-		for i in range(self.num_nodes):
+		for i in range(num_nodes):
 			version = buf.read_int16()
 			depth = buf.read_byte()
-			is_array = buf.read_byte()
-			type_offset = buf.read_int()
-			name_offset = buf.read_int()
-			size = buf.read_int()
-			index = buf.read_uint()
-			flags = buf.read_int()
-
-			type = self.get_string(type_offset)
-			name = self.get_string(name_offset)
 
 			if depth == 0:
 				curr = self
@@ -97,13 +88,13 @@ class TypeTree:
 				parents[-1].children.append(curr)
 				parents.append(curr)
 
-			curr.type = type
-			curr.name = name
-			curr.size = size
-			curr.index = index
-			curr.is_array = is_array
 			curr.version = version
-			curr.flags = flags
+			curr.is_array = buf.read_byte()
+			curr.type = self.get_string(buf.read_int())
+			curr.name = self.get_string(buf.read_int())
+			curr.size = buf.read_int()
+			curr.index = buf.read_uint()
+			curr.flags = buf.read_int()
 
 	def get_string(self, offset):
 		if offset < 0:
