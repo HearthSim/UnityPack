@@ -111,16 +111,17 @@ class TypeMetadata:
 	default_instance = None
 
 	@classmethod
-	def default(cls):
+	def default(cls, asset):
 		if not cls.default_instance:
-			cls.default_instance = cls()
+			cls.default_instance = cls(asset)
 			with open(get_asset("structs.dat"), "rb") as f:
 				cls.default_instance.load(BinaryReader(f))
 		return cls.default_instance
 
-	def __init__(self):
+	def __init__(self, asset):
 		self.type_trees = {}
 		self.hashes = {}
+		self.asset = asset
 
 	def load(self, buf):
 		offset = buf.tell()
@@ -333,7 +334,7 @@ class Asset:
 			if self.endianness == 0:
 				buf.endian = "<"
 
-		self.tree = TypeMetadata()
+		self.tree = TypeMetadata(self)
 		self.tree.load(buf)
 
 		self.num_objects = buf.read_uint()
@@ -372,9 +373,9 @@ class Asset:
 		if obj.type_id in self.tree.type_trees:
 			self.types[obj.type_id] = self.tree.type_trees[obj.type_id]
 		elif obj.type_id not in self.types:
-			tree = TypeMetadata.default().type_trees
+			tree = TypeMetadata.default(self).type_trees
 			if obj.class_id in tree:
-				self.types[obj.type_id] = TypeMetadata.default().type_trees[obj.class_id]
+				self.types[obj.type_id] = TypeMetadata.default(self).type_trees[obj.class_id]
 			else:
 				logging.warning("%r absent from structs.dat", obj.class_id)
 				self.types[obj.type_id] = None
