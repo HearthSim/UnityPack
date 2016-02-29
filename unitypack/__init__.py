@@ -46,7 +46,7 @@ def load_object(clsname, obj):
 class TypeTree:
 	NULL = "(null)"
 
-	def __init__(self):
+	def __init__(self, format):
 		self.children = []
 		self.version = 0
 		self.is_array = False
@@ -55,6 +55,7 @@ class TypeTree:
 		self.flags = 0
 		self.type = self.NULL
 		self.name = self.NULL
+		self.format = format
 
 	def __repr__(self):
 		return "<%s %s (size=%r, index=%r, is_array=%r, flags=%r)>" % (
@@ -84,7 +85,7 @@ class TypeTree:
 			else:
 				while len(parents) > depth:
 					parents.pop()
-				curr = TypeTree()
+				curr = TypeTree(self.format)
 				parents[-1].children.append(curr)
 				parents.append(curr)
 
@@ -185,7 +186,7 @@ class ObjectInfo:
 	def read_value(self, type, buf):
 		align = False
 		t = type.type
-		first_child = type.children[0] if type.children else TypeTree()
+		first_child = type.children[0] if type.children else TypeTree(self.asset.format)
 		if t == "bool":
 			result = buf.read_boolean()
 		elif t == "UInt8":
