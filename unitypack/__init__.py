@@ -337,8 +337,8 @@ class Asset:
 		self.tree = TypeMetadata(self)
 		self.tree.load(buf)
 
-		self.num_objects = buf.read_uint()
-		for i in range(self.num_objects):
+		num_objects = buf.read_uint()
+		for i in range(num_objects):
 			if self.format >= 14:
 				buf.align()
 			obj = ObjectInfo(self)
