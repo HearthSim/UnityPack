@@ -385,6 +385,14 @@ class Asset:
 
 		self.objects[obj.path_id] = obj
 
+	def pretty(self):
+		ret = []
+		for id, tree in self.tree.type_trees.items():
+			ret.append("%i:" % (id))
+			for child in tree.children:
+				ret.append("\t" + repr(child))
+		return "\n".join(ret)
+
 
 class AssetRef:
 	def load(self, buf):
