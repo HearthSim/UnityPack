@@ -66,6 +66,27 @@ class TypeTree:
 	def post_align(self):
 		return bool(self.flags & 0x4000)
 
+	def load(self, buf):
+		if self.format == 10 or self.format >= 12:
+			self.load_blob(buf)
+		else:
+			self.load_old(buf)
+
+	def load_old(self, buf):
+		self.type = buf.read_string()
+		self.name = buf.read_string()
+		self.size = buf.read_int()
+		self.index = buf.read_int()
+		self.is_array = bool(buf.read_int())
+		self.version = buf.read_int()
+		self.flags = buf.read_int()
+
+		num_fields = buf.read_int()
+		for i in range(num_fields):
+			tree = TypeTree(self.format)
+			tree.load(buf)
+			self.children.append(tree)
+
 	def load_blob(self, buf):
 		num_nodes = buf.read_uint()
 		self.buffer_bytes = buf.read_uint()
@@ -129,22 +150,30 @@ class TypeMetadata:
 		self.generator_version = buf.read_string()
 		self.target_platform = RuntimePlatform(buf.read_uint())
 
-		# if format >= 13
-		self.has_type_trees = buf.read_boolean()
-		self.num_types = buf.read_int()
+		if self.asset.format >= 13:
+			self.has_type_trees = buf.read_boolean()
+			self.num_types = buf.read_int()
 
-		for i in range(self.num_types):
-			class_id = buf.read_int()
-			if class_id < 0:
-				hash = buf.read(0x20)
-			else:
-				hash = buf.read(0x10)
+			for i in range(self.num_types):
+				class_id = buf.read_int()
+				if class_id < 0:
+					hash = buf.read(0x20)
+				else:
+					hash = buf.read(0x10)
 
-			self.hashes[class_id] = hash
+				self.hashes[class_id] = hash
 
-			if self.has_type_trees:
-				tree = TypeTree()
-				tree.load_blob(buf)
+				if self.has_type_trees:
+					tree = TypeTree(self.asset.format)
+					tree.load(buf)
+					self.type_trees[class_id] = tree
+
+		else:
+			num_fields = buf.read_int()
+			for i in range(num_fields):
+				class_id = buf.read_int()
+				tree = TypeTree(self.asset.format)
+				tree.load(buf)
 				self.type_trees[class_id] = tree
 
 
@@ -337,6 +366,9 @@ class Asset:
 
 		self.tree = TypeMetadata(self)
 		self.tree.load(buf)
+
+		if self.format <= 9:
+			buf.read_uint()  # Is this correct?
 
 		num_objects = buf.read_uint()
 		for i in range(num_objects):
