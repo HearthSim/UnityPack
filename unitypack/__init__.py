@@ -192,7 +192,7 @@ class ObjectInfo:
 			return "<N/A>"
 
 	def load(self, buf):
-		self.path_id = self.asset.read_id(buf)
+		self.path_id = self.read_id(buf)
 		self.data_offset = buf.read_uint() + self.asset.data_offset
 		self.size = buf.read_uint()
 		self.type_id = buf.read_int()
@@ -205,6 +205,12 @@ class ObjectInfo:
 
 			if self.asset.format >= 15:
 				self.unk1 = buf.read_byte()
+
+	def read_id(self, buf):
+		if self.asset.long_object_ids:
+			return buf.read_int64()
+		else:
+			return self.asset.read_id(buf)
 
 	def read(self):
 		type = self.asset.types[self.type_id]
@@ -345,6 +351,7 @@ class Asset:
 		self.types = {}
 		self.bundle = None
 		self.name = ""
+		self.long_object_ids = False
 
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
@@ -368,8 +375,7 @@ class Asset:
 		self.tree.load(buf)
 
 		if 7 <= self.format <= 13:
-			# Skipping 4 bytes
-			buf.read_uint()
+			self.long_object_ids = bool(buf.read_uint())
 
 		num_objects = buf.read_uint()
 		for i in range(num_objects):
