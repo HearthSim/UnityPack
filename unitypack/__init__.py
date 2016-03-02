@@ -367,8 +367,9 @@ class Asset:
 		self.tree = TypeMetadata(self)
 		self.tree.load(buf)
 
-		if self.format <= 9:
-			buf.read_uint()  # Is this correct?
+		if 7 <= self.format <= 13:
+			# Skipping 4 bytes
+			buf.read_uint()
 
 		num_objects = buf.read_uint()
 		for i in range(num_objects):
