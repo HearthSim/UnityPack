@@ -394,7 +394,7 @@ class Asset:
 				self.asset_refs.append(ref)
 
 		unk_string = buf.read_string()
-		assert not unk_string, unk_string
+		assert not unk_string, repr(unk_string)
 
 	def read_id(self, buf):
 		if self.format >= 14:
