@@ -188,8 +188,10 @@ class ObjectInfo:
 	def type(self):
 		if self.type_id > 0:
 			return UnityClass(self.type_id)
-		else:
-			return "<N/A>"
+		elif self.type_id not in self.asset.typenames:
+			typename = self.read()["m_Script"].resolve()["m_ClassName"]
+			self.asset.typenames[self.type_id] = typename
+		return self.asset.typenames[self.type_id]
 
 	def load(self, buf):
 		self.path_id = self.read_id(buf)
@@ -353,6 +355,7 @@ class Asset:
 		self.adds = []
 		self.asset_refs = [self]
 		self.types = {}
+		self.typenames = {}
 		self.bundle = None
 		self.name = ""
 		self.long_object_ids = False
