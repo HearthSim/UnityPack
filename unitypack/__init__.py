@@ -425,7 +425,7 @@ class Asset:
 				self.types[obj.type_id] = None
 
 		if obj.path_id in self.objects:
-			raise ValueError("Duplicate asset object: %r" % (obj))
+			raise ValueError("Duplicate asset object: %r (path_id=%r)" % (obj, obj.path_id))
 
 		self.objects[obj.path_id] = obj
 
