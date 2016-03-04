@@ -307,7 +307,8 @@ class ObjectPointer:
 		return self.source_asset.asset_refs[self.file_id]
 
 	def resolve(self):
-		return self.asset.objects[self.path_id]
+		obj = self.asset.objects[self.path_id].read()
+		return obj
 
 
 class Asset:
