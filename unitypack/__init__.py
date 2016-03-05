@@ -232,6 +232,7 @@ class ObjectInfo:
 		align = False
 		t = type.type
 		first_child = type.children[0] if type.children else TypeTree(self.asset.format)
+		print("type=%r, t=%r, c=%r" % (type, t, type.children))
 		if t == "bool":
 			result = buf.read_boolean()
 		elif t == "UInt8":
@@ -250,6 +251,10 @@ class ObjectInfo:
 			buf.align()
 			result = buf.read_float()
 		elif t == "string":
+			print(t, self.data_offset, self.size)
+			if type.name == "m_Namespace":
+				exit()
+				print(buf.read_int())
 			size = buf.read_uint()
 			result = buf.read_string(size)
 			align = type.children[0].post_align
@@ -385,6 +390,10 @@ class Asset:
 
 		self.tree = TypeMetadata(self)
 		self.tree.load(buf)
+		print("Tree = %r" % (self.tree))
+		print("Tree.type_trees = %r" % (self.tree.type_trees))
+		print("monoscript base = %r" % (self.tree.type_trees[115]))
+		print("monoscript base = %r" % (self.tree.type_trees[115].children))
 
 		if 7 <= self.format <= 13:
 			self.long_object_ids = bool(buf.read_uint())
@@ -413,7 +422,7 @@ class Asset:
 				self.asset_refs.append(ref)
 
 		unk_string = buf.read_string()
-		assert not unk_string, repr(unk_string)
+		# assert not unk_string, repr(unk_string)
 
 	def read_id(self, buf):
 		if self.format >= 14:

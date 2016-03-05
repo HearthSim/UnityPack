@@ -35,6 +35,27 @@ def write_to_file(filename, contents, mode="w"):
 def handle_asset(asset):
 	print(asset)
 	for id, obj in asset.objects.items():
+		print(obj)
+		if obj.type_id < 0:
+			d = obj.read()
+			classname = d["m_Script"].resolve()["m_ClassName"]
+			if classname == "CardDef":
+				gameobj = d["m_GameObject"].resolve()
+				component = gameobj.component
+				for component in component:
+					if component["first"] == 114:
+						actor = component["second"].resolve()
+						print(actor)
+						carddef = actor["m_GameObject"].resolve()
+						print(carddef.component[1]["second"].resolve())
+				exit()
+				print(repr(component))
+				print(repr(component._obj["m_GameObject"].resolve()))
+				go2 = component["m_GameObject"].resolve()._obj
+				print(go2)
+				continue
+		else:
+			continue
 		if obj.type not in SUPPORTED_FORMATS:
 			print("Skipping %r" % (obj))
 			continue
