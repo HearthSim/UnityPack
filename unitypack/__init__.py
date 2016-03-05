@@ -137,7 +137,7 @@ class TypeMetadata:
 		if not cls.default_instance:
 			cls.default_instance = cls(asset)
 			with open(get_asset("structs.dat"), "rb") as f:
-				cls.default_instance.load(BinaryReader(f))
+				cls.default_instance.load(BinaryReader(f), format=15)
 		return cls.default_instance
 
 	def __init__(self, asset):
@@ -145,12 +145,14 @@ class TypeMetadata:
 		self.hashes = {}
 		self.asset = asset
 
-	def load(self, buf):
+	def load(self, buf, format=None):
+		if format is None:
+			format = self.asset.format
 		offset = buf.tell()
 		self.generator_version = buf.read_string()
 		self.target_platform = RuntimePlatform(buf.read_uint())
 
-		if self.asset.format >= 13:
+		if format >= 13:
 			self.has_type_trees = buf.read_boolean()
 			self.num_types = buf.read_int()
 
@@ -164,7 +166,7 @@ class TypeMetadata:
 				self.hashes[class_id] = hash
 
 				if self.has_type_trees:
-					tree = TypeTree(self.asset.format)
+					tree = TypeTree(format)
 					tree.load(buf)
 					self.type_trees[class_id] = tree
 
@@ -172,7 +174,7 @@ class TypeMetadata:
 			num_fields = buf.read_int()
 			for i in range(num_fields):
 				class_id = buf.read_int()
-				tree = TypeTree(self.asset.format)
+				tree = TypeTree(format)
 				tree.load(buf)
 				self.type_trees[class_id] = tree
 
