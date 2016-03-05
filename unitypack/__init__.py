@@ -422,9 +422,9 @@ class Asset:
 		if obj.type_id in self.tree.type_trees:
 			self.types[obj.type_id] = self.tree.type_trees[obj.type_id]
 		elif obj.type_id not in self.types:
-			tree = TypeMetadata.default(self).type_trees
-			if obj.class_id in tree:
-				self.types[obj.type_id] = TypeMetadata.default(self).type_trees[obj.class_id]
+			trees = TypeMetadata.default(self).type_trees
+			if obj.class_id in trees:
+				self.types[obj.type_id] = trees[obj.class_id]
 			else:
 				logging.warning("%r absent from structs.dat", obj.class_id)
 				self.types[obj.type_id] = None
