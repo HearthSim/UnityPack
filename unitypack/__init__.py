@@ -218,7 +218,10 @@ class ObjectInfo:
 
 	def read(self):
 		if self.type_id < 0:
-			type = TypeMetadata.default(self.asset).type_trees[self.class_id]
+			if self.class_id in self.asset.tree.type_trees:
+				type = self.asset.tree.type_trees[self.class_id]
+			else:
+				type = TypeMetadata.default(self.asset).type_trees[self.class_id]
 		else:
 			type = self.asset.types[self.type_id]
 		buf = BinaryReader(self.asset.data)
