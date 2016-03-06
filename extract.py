@@ -2,8 +2,8 @@
 import os
 import sys
 import unitypack
-from PIL import ImageOps
-from fsb5 import FSB5
+# from PIL import ImageOps
+# from fsb5 import FSB5
 
 
 SUPPORTED_FORMATS = (
@@ -32,9 +32,46 @@ def write_to_file(filename, contents, mode="w"):
 	print("Written %i bytes to %r" % (written, path))
 
 
+def hexdump(buf, limit = 256):
+	if len(buf) < limit:
+		limit = len(buf)
+	hextable = "0123456789abcdef"
+	s = ""
+	for i in range(0, limit, 16):
+		s += "%04x: " % i
+		for j in range(0, 16):
+			if i+j >= limit:
+				s += "  "
+			else:
+				c = buf[i+j]
+				s += hextable[0xf&(c>>4)]
+				s += hextable[0xf&c]
+			s += " "
+		s += " "
+		for j in range(0, 16):
+			if i+j >= limit:
+				break
+			c = buf[i+j]
+			if (c >= 0x20 and c <= 0x7e) or (c >= 0xa1 and c <= 0xff and c != 0xad):
+				s += chr(c)
+			else:
+				s += "."
+		s += "\n"
+	return s
+
+
 def handle_asset(asset):
 	print(asset)
 	for id, obj in asset.objects.items():
+		print(hexdump(obj.bytes()))
+		print("type_id=%i class_id=%i" % (obj.type_id, obj.class_id))
+		print(obj.type_tree.dump())
+		if obj.type_id == -1:
+			d = obj.read()
+			so = d["m_Script"].object
+			print(hexdump(so.bytes()))
+			print(so.type_tree.dump())
+			so.read()
 		print(obj)
 		if obj.type_id < 0:
 			d = obj.read()

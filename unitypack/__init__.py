@@ -62,6 +62,12 @@ class TypeTree:
 			self.type, self.name, self.size, self.index, self.is_array, self.flags
 		)
 
+	def dump(self, indent=""):
+		s = indent + self.__repr__()
+		for child in self.children:
+			s += "\n" + child.dump(indent + "  ")
+		return s
+
 	@property
 	def post_align(self):
 		return bool(self.flags & 0x4000)
@@ -195,6 +201,19 @@ class ObjectInfo:
 			self.asset.typenames[self.type_id] = typename
 		return self.asset.typenames[self.type_id]
 
+	@property
+	def type_tree(self):
+		if self.type_id < 0:
+			if self.type_id in self.asset.tree.type_trees:
+				type = self.asset.tree.type_trees[self.type_id]
+			elif self.class_id in self.asset.tree.type_trees:
+				type = self.asset.tree.type_trees[self.class_id]
+			else:
+				type = TypeMetadata.default(self.asset).type_trees[self.class_id]
+		else:
+			type = self.asset.types[self.type_id]
+		return type
+
 	def load(self, buf):
 		self.path_id = self.read_id(buf)
 		self.data_offset = buf.read_uint() + self.asset.data_offset
@@ -216,14 +235,13 @@ class ObjectInfo:
 		else:
 			return self.asset.read_id(buf)
 
+	def bytes(self):
+		buf = BinaryReader(self.asset.data)
+		buf.seek(self.data_offset)
+		return buf.read(self.size)
+
 	def read(self):
-		if self.type_id < 0:
-			if self.class_id in self.asset.tree.type_trees:
-				type = self.asset.tree.type_trees[self.class_id]
-			else:
-				type = TypeMetadata.default(self.asset).type_trees[self.class_id]
-		else:
-			type = self.asset.types[self.type_id]
+		type = self.type_tree
 		buf = BinaryReader(self.asset.data)
 		buf.seek(self.data_offset)
 		return self.read_value(type, buf)
@@ -231,8 +249,8 @@ class ObjectInfo:
 	def read_value(self, type, buf):
 		align = False
 		t = type.type
+		print(type, buf.buf.tell())
 		first_child = type.children[0] if type.children else TypeTree(self.asset.format)
-		print("type=%r, t=%r, c=%r" % (type, t, type.children))
 		if t == "bool":
 			result = buf.read_boolean()
 		elif t == "UInt8":
@@ -241,20 +259,20 @@ class ObjectInfo:
 			result = buf.read_int16()
 		elif t == "UInt16":
 			result = buf.read_uint16()
-		elif t == "UInt64":
+		elif t == "SInt64" or t == "UInt64":
 			result = buf.read_int64()
-		elif t == "unsigned int":
+		elif t == "unsigned int" or t == "UInt32":
 			result = buf.read_uint()
-		elif t == "int":
+		elif t == "int" or t == "SInt32":
 			result = buf.read_int()
 		elif t == "float":
 			buf.align()
 			result = buf.read_float()
 		elif t == "string":
-			print(t, self.data_offset, self.size)
 			if type.name == "m_Namespace":
-				exit()
-				print(buf.read_int())
+				# print(buf.read_int())
+				print("heyguys")
+				# exit()
 			size = buf.read_uint()
 			result = buf.read_string(size)
 			align = type.children[0].post_align
@@ -318,8 +336,12 @@ class ObjectPointer:
 	def asset(self):
 		return self.source_asset.asset_refs[self.file_id]
 
+	@property
+	def object(self):
+		return self.asset.objects[self.path_id]
+
 	def resolve(self):
-		obj = self.asset.objects[self.path_id].read()
+		obj = self.object.read()
 		return obj
 
 
@@ -392,8 +414,10 @@ class Asset:
 		self.tree.load(buf)
 		print("Tree = %r" % (self.tree))
 		print("Tree.type_trees = %r" % (self.tree.type_trees))
-		print("monoscript base = %r" % (self.tree.type_trees[115]))
-		print("monoscript base = %r" % (self.tree.type_trees[115].children))
+		print("internal 115:")
+		print(self.tree.type_trees[115].dump())
+		print("default 115:")
+		print(TypeMetadata.default(self).type_trees[115].dump())
 
 		if 7 <= self.format <= 13:
 			self.long_object_ids = bool(buf.read_uint())
