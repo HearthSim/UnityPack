@@ -414,7 +414,7 @@ class Asset:
 				id = self.read_id(buf)
 				self.adds.append((id, buf.read_int()))
 
-		if self.format >= 14:
+		if self.format >= 6:
 			num_refs = buf.read_uint()
 			for i in range(num_refs):
 				ref = AssetRef()
