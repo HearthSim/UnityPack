@@ -240,11 +240,13 @@ class ObjectInfo:
 			result = buf.read_int16()
 		elif t == "UInt16":
 			result = buf.read_uint16()
+		elif t == "SInt64":
+			result = buf.read_int64()
 		elif t == "UInt64":
 			result = buf.read_int64()
-		elif t == "unsigned int":
+		elif t in ("UInt32", "unsigned int"):
 			result = buf.read_uint()
-		elif t == "int":
+		elif t in ("SInt32", "int"):
 			result = buf.read_int()
 		elif t == "float":
 			buf.align()
