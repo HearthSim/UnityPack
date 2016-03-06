@@ -313,9 +313,12 @@ class ObjectPointer:
 	def asset(self):
 		return self.source_asset.asset_refs[self.file_id]
 
+	@property
+	def object(self):
+		return self.asset.objects[self.path_id]
+
 	def resolve(self):
-		obj = self.asset.objects[self.path_id].read()
-		return obj
+		return self.object.read()
 
 
 class Asset:
