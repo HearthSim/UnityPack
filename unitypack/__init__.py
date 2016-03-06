@@ -195,6 +195,17 @@ class ObjectInfo:
 			self.asset.typenames[self.type_id] = typename
 		return self.asset.typenames[self.type_id]
 
+	@property
+	def type_tree(self):
+		if self.type_id < 0:
+			type_trees = self.asset.tree.type_trees
+			if self.type_id in type_trees:
+				return type_trees[self.type_id]
+			elif self.class_id in type_trees:
+				return type_trees[self.class_id]
+			return TypeMetadata.default(self.asset).type_trees[self.class_id]
+		return self.asset.types[self.type_id]
+
 	def load(self, buf):
 		self.path_id = self.read_id(buf)
 		self.data_offset = buf.read_uint() + self.asset.data_offset
@@ -217,16 +228,9 @@ class ObjectInfo:
 			return self.asset.read_id(buf)
 
 	def read(self):
-		if self.type_id < 0:
-			if self.class_id in self.asset.tree.type_trees:
-				type = self.asset.tree.type_trees[self.class_id]
-			else:
-				type = TypeMetadata.default(self.asset).type_trees[self.class_id]
-		else:
-			type = self.asset.types[self.type_id]
 		buf = BinaryReader(self.asset.data)
 		buf.seek(self.data_offset)
-		return self.read_value(type, buf)
+		return self.read_value(self.type_tree, buf)
 
 	def read_value(self, type, buf):
 		align = False
