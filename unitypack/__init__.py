@@ -191,7 +191,8 @@ class ObjectInfo:
 		if self.type_id > 0:
 			return UnityClass(self.type_id)
 		elif self.type_id not in self.asset.typenames:
-			typename = self.read()["m_Script"].resolve()["m_ClassName"]
+			script = self.read()["m_Script"]
+			typename = script.resolve()["m_ClassName"]
 			self.asset.typenames[self.type_id] = typename
 		return self.asset.typenames[self.type_id]
 
@@ -317,7 +318,10 @@ class ObjectPointer:
 
 	@property
 	def asset(self):
-		return self.source_asset.asset_refs[self.file_id]
+		ret = self.source_asset.asset_refs[self.file_id]
+		if isinstance(ret, AssetRef):
+			raise NotImplementedError("AssetRef lookups are not supported")
+		return ret
 
 	@property
 	def object(self):
