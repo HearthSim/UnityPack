@@ -265,7 +265,7 @@ class ObjectInfo:
 				first_child = type
 
 			if t.startswith("PPtr<"):
-				result = ObjectPointer(self.asset)
+				result = ObjectPointer(type, self.asset)
 				result.load(buf)
 				if not result:
 					result = None
@@ -301,7 +301,8 @@ class ObjectInfo:
 
 
 class ObjectPointer:
-	def __init__(self, asset):
+	def __init__(self, type, asset):
+		self.type = type
 		self.source_asset = asset
 
 	def __bool__(self):
