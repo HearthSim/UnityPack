@@ -2,17 +2,9 @@
 import os
 import sys
 import unitypack
+from argparse import ArgumentParser
 from PIL import ImageOps
 from fsb5 import FSB5
-
-
-SUPPORTED_FORMATS = (
-	"AudioClip",
-	"MovieTexture",
-	"Shader",
-	"TextAsset",
-	"Texture2D",
-)
 
 
 def get_output_path(filename):
@@ -32,11 +24,9 @@ def write_to_file(filename, contents, mode="w"):
 	print("Written %i bytes to %r" % (written, path))
 
 
-def handle_asset(asset):
-	print(asset)
+def handle_asset(asset, handle_formats):
 	for id, obj in asset.objects.items():
-		if obj.type not in SUPPORTED_FORMATS:
-			print("Skipping %r" % (obj))
+		if obj.type not in handle_formats:
 			continue
 
 		d = obj.read()
@@ -80,19 +70,40 @@ def handle_asset(asset):
 
 
 def main():
-	files = sys.argv[1:]
-	for file in files:
+	p = ArgumentParser()
+	p.add_argument("files", nargs="+")
+	p.add_argument("--all", action="store_true")
+	p.add_argument("--audio", action="store_true")
+	p.add_argument("--images", action="store_true")
+	p.add_argument("--shaders", action="store_true")
+	p.add_argument("--text", action="store_true")
+	p.add_argument("--video", action="store_true")
+	args = p.parse_args(sys.argv[1:])
+
+	format_args = {
+		"audio": "AudioClip",
+		"images": "Texture2D",
+		"shaders": "Shader",
+		"text": "TextAsset",
+		"video": "MovieTexture",
+	}
+	handle_formats = []
+	for a, classname in format_args.items():
+		if args.all or getattr(args, a):
+			handle_formats.append(classname)
+
+	for file in args.files:
 		if file.endswith(".assets"):
 			with open(file, "rb") as f:
 				asset = unitypack.Asset.from_file(f)
-			handle_asset(asset)
+			handle_asset(asset, handle_formats)
 			continue
 
 		with open(file, "rb") as f:
 			bundle = unitypack.load(f)
 
 		for asset in bundle.assets:
-			handle_asset(asset)
+			handle_asset(asset, handle_formats)
 
 
 if __name__ == "__main__":
