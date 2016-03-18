@@ -41,7 +41,12 @@ def handle_asset(asset, handle_formats):
 					filename = "%s-%i.%s" % (d.name, i, af.get_sample_extension())
 				else:
 					filename = "%s.%s" % (d.name, af.get_sample_extension())
-				write_to_file(filename, af.rebuild_sample(sample), mode="wb")
+				try:
+					sample = af.rebuild_sample(sample)
+				except ValueError as e:
+					print("WARNING: Could not extract %r (%s)" % (d, e))
+					continue
+				write_to_file(filename, sample, mode="wb")
 
 		elif obj.type == "MovieTexture":
 			filename = d.name + ".ogv"
