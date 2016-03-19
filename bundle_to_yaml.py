@@ -25,6 +25,12 @@ def objectpointer_representer(dumper, data):
 yaml.add_representer(unitypack.ObjectPointer, objectpointer_representer)
 
 
+def shader_representer(dumper, data):
+	obj = data._obj.copy()
+	obj["m_Script"] = "<stripped>"
+	return dumper.represent_mapping("!Shader", obj)
+
+
 def textasset_representer(dumper, data):
 	obj = data._obj.copy()
 	obj["m_Script"] = "<stripped>"
@@ -51,6 +57,7 @@ def main():
 
 	if args.strip:
 		yaml.add_representer(unitypack.engine.movie.MovieTexture, movietexture_representer)
+		yaml.add_representer(unitypack.engine.text.Shader, shader_representer)
 		yaml.add_representer(unitypack.engine.text.TextAsset, textasset_representer)
 		yaml.add_representer(unitypack.engine.texture.Texture2D, texture2d_representer)
 
