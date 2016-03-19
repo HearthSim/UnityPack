@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import pickle
 import sys
 import unitypack
 from argparse import ArgumentParser
@@ -55,6 +56,10 @@ def handle_asset(asset, handle_formats):
 		elif obj.type == "Shader":
 			write_to_file(d.name + ".cg", d.script)
 
+		elif obj.type == "Mesh":
+			mesh_data = pickle.dumps(d._obj)
+			write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
+
 		elif obj.type == "TextAsset":
 			if isinstance(d.script, bytes):
 				write_to_file(d.name + ".bin", d.script, mode="wb")
@@ -80,6 +85,7 @@ def main():
 	p.add_argument("--all", action="store_true")
 	p.add_argument("--audio", action="store_true")
 	p.add_argument("--images", action="store_true")
+	p.add_argument("--models", action="store_true")
 	p.add_argument("--shaders", action="store_true")
 	p.add_argument("--text", action="store_true")
 	p.add_argument("--video", action="store_true")
@@ -88,6 +94,7 @@ def main():
 	format_args = {
 		"audio": "AudioClip",
 		"images": "Texture2D",
+		"models": "Mesh",
 		"shaders": "Shader",
 		"text": "TextAsset",
 		"video": "MovieTexture",
