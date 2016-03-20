@@ -41,6 +41,10 @@ def texture2d_representer(dumper, data):
 	return dumper.represent_mapping("!Texture2D", obj)
 
 
+def mesh_representer(dumper, data):
+	return dumper.represent_mapping("!Mesh", {data.name: "<stripped>"})
+
+
 def movietexture_representer(dumper, data):
 	obj = data._obj.copy()
 	obj["m_MovieData"] = "<stripped>"
@@ -54,6 +58,7 @@ def main():
 	args = p.parse_args(sys.argv[1:])
 
 	if args.strip:
+		yaml.add_representer(unitypack.engine.mesh.Mesh, mesh_representer)
 		yaml.add_representer(unitypack.engine.movie.MovieTexture, movietexture_representer)
 		yaml.add_representer(unitypack.engine.text.Shader, shader_representer)
 		yaml.add_representer(unitypack.engine.text.TextAsset, textasset_representer)
