@@ -19,9 +19,7 @@ yaml.add_representer(unitypack.Asset, asset_representer)
 
 
 def objectpointer_representer(dumper, data):
-	return dumper.represent_mapping("!pptr", {
-		"file": data.file_id, "path": data.path_id
-	})
+	return dumper.represent_sequence("!PPtr", [data.file_id, data.path_id])
 yaml.add_representer(unitypack.ObjectPointer, objectpointer_representer)
 
 
