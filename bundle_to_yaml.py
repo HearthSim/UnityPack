@@ -23,6 +23,10 @@ def objectpointer_representer(dumper, data):
 yaml.add_representer(unitypack.ObjectPointer, objectpointer_representer)
 
 
+def unityobj_representer(dumper, data):
+	return dumper.represent_mapping("!unitypack:%s" % (data.__class__.__name__), data._obj)
+
+
 def shader_representer(dumper, data):
 	obj = data._obj.copy()
 	obj["m_Script"] = "<stripped>"
@@ -56,6 +60,10 @@ def main():
 	p.add_argument("files", nargs="+")
 	p.add_argument("-s", "--strip", action="store_true", help="Strip extractable data")
 	args = p.parse_args(sys.argv[1:])
+
+	for k, v in unitypack.engine.__dict__.items():
+		if isinstance(v, type) and issubclass(v, unitypack.engine.object.Object):
+			yaml.add_representer(v, unityobj_representer)
 
 	if args.strip:
 		yaml.add_representer(unitypack.engine.mesh.Mesh, mesh_representer)
