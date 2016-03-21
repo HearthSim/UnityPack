@@ -40,13 +40,11 @@ def textasset_representer(dumper, data):
 
 
 def texture2d_representer(dumper, data):
-	obj = data._obj.copy()
-	obj["image data"] = "<stripped>"
-	return dumper.represent_mapping("!Texture2D", obj)
+	return dumper.represent_mapping("!unitypack:stripped:Texture2D", {data.name: None})
 
 
 def mesh_representer(dumper, data):
-	return dumper.represent_mapping("!Mesh", {data.name: "<stripped>"})
+	return dumper.represent_mapping("!unitypack:stripped:Mesh", {data.name: None})
 
 
 def movietexture_representer(dumper, data):
