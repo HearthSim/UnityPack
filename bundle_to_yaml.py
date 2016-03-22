@@ -28,15 +28,11 @@ def unityobj_representer(dumper, data):
 
 
 def shader_representer(dumper, data):
-	obj = data._obj.copy()
-	obj["m_Script"] = "<stripped>"
-	return dumper.represent_mapping("!Shader", obj)
+	return dumper.represent_mapping("!unitypack:stripped:Shader", {data.name: None})
 
 
 def textasset_representer(dumper, data):
-	obj = data._obj.copy()
-	obj["m_Script"] = "<stripped>"
-	return dumper.represent_mapping("!TextAsset", obj)
+	return dumper.represent_mapping("!unitypack:stripped:TextAsset", {data.name: None})
 
 
 def texture2d_representer(dumper, data):
