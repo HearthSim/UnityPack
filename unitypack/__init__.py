@@ -36,7 +36,8 @@ def UnityClass(i):
 	return UNITY_CLASSES.get(str(i), "<Unknown #%i>" % (i))
 
 
-def load_object(clsname, obj):
+def load_object(type, obj):
+	clsname = type.type
 	if hasattr(UnityEngine, clsname):
 		obj = getattr(UnityEngine, clsname)(obj)
 
@@ -289,7 +290,7 @@ class ObjectInfo:
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)
 
-				result = load_object(t, result)
+				result = load_object(type, result)
 				if t == "StreamedResource":
 					if self.asset.bundle:
 						result.asset = self.asset.bundle.get_asset(result.source)
