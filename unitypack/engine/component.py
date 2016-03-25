@@ -10,4 +10,8 @@ class Behaviour(Component):
 
 
 class Transform(Component):
-	pass
+	position = field("m_LocalPosition")
+	rotation = field("m_LocalRotation")
+	scale = field("m_LocalScale")
+	parent = field("m_Father")
+	children = field("m_Children")
