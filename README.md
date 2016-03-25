@@ -136,6 +136,7 @@ Stripped classes will be prefixed with `unitypack:stripped:`.
 ## License
 
 python-unitypack is licensed under the terms of the MIT license.
+The full license text is available in the `LICENSE` file.
 
 
 ## Community
