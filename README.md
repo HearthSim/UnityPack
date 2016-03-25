@@ -142,3 +142,5 @@ python-unitypack is licensed under the terms of the MIT license.
 
 python-unitypack is a [HearthSim](http://hearthsim.info) project. All development
 happens on our IRC channel `#hearthsim` on [Freenode](https://freenode.net).
+
+Contributions are welcome. Make sure to read through the `CONTRIBUTING.md` first.
