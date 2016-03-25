@@ -46,7 +46,7 @@ def mesh_representer(dumper, data):
 def movietexture_representer(dumper, data):
 	obj = data._obj.copy()
 	obj["m_MovieData"] = "<stripped>"
-	return dumper.represent_mapping("!MovieTexture", obj)
+	return dumper.represent_mapping("!unitypack:stripped:MovieTexture", obj)
 
 
 def main():
