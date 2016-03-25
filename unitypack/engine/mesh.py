@@ -22,5 +22,21 @@ class Mesh(Object):
 	vertex_data = field("m_VertexData")
 
 
+class SubMesh(Object):
+	first_byte = field("firstByte")
+	first_vertex = field("firstVertex")
+	index_count = field("indexCount")
+	localAABB = field("localAABB")
+	topology = field("topology")
+	vertex_count = field("vertexCount")
+
+
+class VertexData(Object):
+	channels = field("m_Channels")
+	current_channels = field("m_CurrentChannels")
+	data = field("m_DataSize")
+	vertex_count = field("m_VertexCount")
+
+
 class MeshFilter(Component):
 	pass
