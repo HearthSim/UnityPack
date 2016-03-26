@@ -3,6 +3,7 @@ import os
 import pickle
 import sys
 import unitypack
+from unitypack.export import OBJMesh
 from argparse import ArgumentParser
 from PIL import ImageOps
 from fsb5 import FSB5
@@ -57,8 +58,13 @@ def handle_asset(asset, handle_formats):
 			write_to_file(d.name + ".cg", d.script)
 
 		elif obj.type == "Mesh":
-			mesh_data = pickle.dumps(d._obj)
-			write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
+			try:
+				mesh_data = OBJMesh(d).export()
+				write_to_file(d.name + ".obj", mesh_data, mode="w")
+			except NotImplementedError as e:
+				print("WARNING: Could not extract %r (%s)" % (d, e))
+				mesh_data = pickle.dumps(d._obj)
+				write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
 
 		elif obj.type == "TextAsset":
 			if isinstance(d.script, bytes):
