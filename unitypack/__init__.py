@@ -193,10 +193,13 @@ class ObjectInfo:
 			return UnityClass(self.type_id)
 		elif self.type_id not in self.asset.typenames:
 			script = self.read()["m_Script"]
-			try:
-				typename = script.resolve()["m_ClassName"]
-			except NotImplementedError:
-				typename = script.type.type[5:-1]  # Capture type name in PPtr<...>
+			if script:
+				try:
+					typename = script.resolve()["m_ClassName"]
+				except NotImplementedError:
+					typename = script.type.type[5:-1]  # Capture type name in PPtr<...>
+			else:
+				typename = self.asset.tree.type_trees[-150].type
 			self.asset.typenames[self.type_id] = typename
 		return self.asset.typenames[self.type_id]
 
