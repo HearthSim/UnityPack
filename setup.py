@@ -26,5 +26,6 @@ setup(
 	url="https://github.com/HearthSim/python-unitypack",
 	classifiers=CLASSIFIERS,
 	packages=find_packages(),
-	package_data={"": ["classes.json", "strings.dat", "structs.dat"]}
+	package_data={"": ["classes.json", "strings.dat", "structs.dat"]},
+	scripts=["bin/unityextract", "bin/unity2yaml"],
 )
