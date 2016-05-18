@@ -3,10 +3,10 @@ import os
 import pickle
 import sys
 import unitypack
-from unitypack.export import OBJMesh
 from argparse import ArgumentParser
 from PIL import ImageOps
-from fsb5 import FSB5
+from unitypack.export import OBJMesh
+from unitypack.utils import extract_audioclip_samples
 
 
 def get_output_path(filename):
@@ -34,20 +34,8 @@ def handle_asset(asset, handle_formats):
 		d = obj.read()
 
 		if obj.type == "AudioClip":
-			if not d.data:
-				# eg. StreamedResource not available
-				continue
-			af = FSB5(d.data)
-			for i, sample in enumerate(af.samples):
-				if i > 0:
-					filename = "%s-%i.%s" % (d.name, i, af.get_sample_extension())
-				else:
-					filename = "%s.%s" % (d.name, af.get_sample_extension())
-				try:
-					sample = af.rebuild_sample(sample)
-				except ValueError as e:
-					print("WARNING: Could not extract %r (%s)" % (d, e))
-					continue
+			samples = extract_audioclip_samples(d)
+			for filename, sample in samples.items():
 				write_to_file(filename, sample, mode="wb")
 
 		elif obj.type == "MovieTexture":

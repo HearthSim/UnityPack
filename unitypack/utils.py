@@ -2,6 +2,38 @@ import struct
 from os import SEEK_CUR
 
 
+def extract_audioclip_samples(d) -> dict:
+	"""
+	Extract all the sample data from an AudioClip and
+	convert it from FSB5 if needed.
+	"""
+	ret = {}
+
+	if not d.data:
+		# eg. StreamedResource not available
+		return {}
+
+	try:
+		from fsb5 import FSB5
+	except ImportError as e:
+		raise RuntimeError("python-fsb5 is required to extract AudioClip")
+
+	af = FSB5(d.data)
+	for i, sample in enumerate(af.samples):
+		if i > 0:
+			filename = "%s-%i.%s" % (d.name, i, af.get_sample_extension())
+		else:
+			filename = "%s.%s" % (d.name, af.get_sample_extension())
+		try:
+			sample = af.rebuild_sample(sample)
+		except ValueError as e:
+			print("WARNING: Could not extract %r (%s)" % (d, e))
+			continue
+		ret[filename] = sample
+
+	return ret
+
+
 class BinaryReader:
 	def __init__(self, buf, endian="<"):
 		self.buf = buf
