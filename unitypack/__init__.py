@@ -296,7 +296,7 @@ class ObjectInfo:
 				result = load_object(type, result)
 				if t == "StreamedResource":
 					if self.asset.bundle:
-						result.asset = self.asset.bundle.get_asset(result.source)
+						result.asset = self.asset.bundle.environment.get_asset(result.source)
 					else:
 						logging.warning("StreamedResource not available without bundle")
 						result.asset = None
@@ -328,7 +328,7 @@ class ObjectPointer:
 	def asset(self):
 		ret = self.source_asset.asset_refs[self.file_id]
 		if isinstance(ret, AssetRef):
-			raise NotImplementedError("AssetRef lookups are not supported")
+			ret = ret.resolve()
 		return ret
 
 	@property
@@ -476,7 +476,10 @@ class AssetRef:
 		self.guid = UUID(hexlify(buf.read(16)).decode("utf-8"))
 		self.type = buf.read_int()
 		self.file_path = buf.read_string()
-		self.asset = None  # TODO loadrefs
+		self.asset = None
+
+	def resolve(self):
+		return self.source.bundle.environment.get_asset(self.file_path)
 
 	def __repr__(self):
 		return "<%s (asset_path=%r, guid=%r, type=%r, file_path=%r)>" % (
@@ -485,7 +488,8 @@ class AssetRef:
 
 
 class AssetBundle:
-	def __init__(self):
+	def __init__(self, environment):
+		self.environment = environment
 		self.assets = []
 
 	@property
@@ -533,22 +537,35 @@ class AssetBundle:
 				asset.load(asset.data)
 			self.assets.append(asset)
 
+
+class UnityEnvironment:
+	def __init__(self):
+		self.bundles = {}
+
+	def load(self, file):
+		ret = AssetBundle(self)
+		ret.load(file)
+		self.bundles[ret.name.lower()] = ret
+		return ret
+
 	def get_asset(self, url):
 		if not url:
 			return None
 		u = urlparse(url)
 		assert u.scheme == "archive"
 
-		archive, name = os.path.split(u.path)
-		# Ignore the archive for now
+		archive, name = os.path.split(u.path.lstrip("/"))
 
-		for asset in self.assets:
+		if archive not in self.bundles:
+			raise NotImplementedError("Cannot find %r in %r" % (archive, self.bundles))
+		bundle = self.bundles[archive]
+
+		for asset in bundle.assets:
 			if asset.name == name:
 				return asset
 		raise KeyError("No such asset: %r" % (name))
 
 
 def load(file):
-	ret = AssetBundle()
-	ret.load(file)
-	return ret
+	env = UnityEnvironment()
+	return env.load(file)
