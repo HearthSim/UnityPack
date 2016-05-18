@@ -514,6 +514,10 @@ class AssetBundle:
 
 		assert self.signature in (SIGNATURE_RAW, SIGNATURE_WEB)
 
+		_ = buf.read_int()
+		_ = buf.read_byte()
+		self.name = buf.read_string()
+
 		# Preload assets
 		buf.seek(self.header_size)
 		if not self.compressed:
