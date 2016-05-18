@@ -31,6 +31,7 @@ class UnityExtract:
 		p.add_argument("--shaders", action="store_true")
 		p.add_argument("--text", action="store_true")
 		p.add_argument("--video", action="store_true")
+		p.add_argument("--outdir", nargs="?", default="")
 		self.args = p.parse_args(args)
 
 		self.handle_formats = []
@@ -55,7 +56,7 @@ class UnityExtract:
 		return 0
 
 	def get_output_path(self, filename):
-		basedir = "out"
+		basedir = self.args.outdir
 		path = os.path.join(basedir, filename)
 		dirs = os.path.dirname(path)
 		if not os.path.exists(dirs):
