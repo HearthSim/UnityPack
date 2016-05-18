@@ -9,83 +9,8 @@ from unitypack.export import OBJMesh
 from unitypack.utils import extract_audioclip_samples
 
 
-def get_output_path(filename):
-	basedir = "out"
-	path = os.path.join(basedir, filename)
-	dirs = os.path.dirname(path)
-	if not os.path.exists(dirs):
-		os.makedirs(dirs)
-	return path
-
-
-def write_to_file(filename, contents, mode="w"):
-	path = get_output_path(filename)
-	with open(path, mode) as f:
-		written = f.write(contents)
-
-	print("Written %i bytes to %r" % (written, path))
-
-
-def handle_asset(asset, handle_formats):
-	for id, obj in asset.objects.items():
-		if obj.type not in handle_formats:
-			continue
-
-		d = obj.read()
-
-		if obj.type == "AudioClip":
-			samples = extract_audioclip_samples(d)
-			for filename, sample in samples.items():
-				write_to_file(filename, sample, mode="wb")
-
-		elif obj.type == "MovieTexture":
-			filename = d.name + ".ogv"
-			write_to_file(filename, d.movie_data, mode="wb")
-
-		elif obj.type == "Shader":
-			write_to_file(d.name + ".cg", d.script)
-
-		elif obj.type == "Mesh":
-			try:
-				mesh_data = OBJMesh(d).export()
-				write_to_file(d.name + ".obj", mesh_data, mode="w")
-			except NotImplementedError as e:
-				print("WARNING: Could not extract %r (%s)" % (d, e))
-				mesh_data = pickle.dumps(d._obj)
-				write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
-
-		elif obj.type == "TextAsset":
-			if isinstance(d.script, bytes):
-				write_to_file(d.name + ".bin", d.script, mode="wb")
-			else:
-				write_to_file(d.name + ".txt", d.script)
-
-		elif obj.type == "Texture2D":
-			filename = d.name + ".png"
-			image = d.image
-			if image is None:
-				print("WARNING: %s is an empty image" % (filename))
-				write_to_file(filename, "")
-			else:
-				print("Decoding %r" % (d))
-				img = ImageOps.flip(image)
-				path = get_output_path(filename)
-				img.save(path)
-
-
-def main():
-	p = ArgumentParser()
-	p.add_argument("files", nargs="+")
-	p.add_argument("--all", action="store_true")
-	p.add_argument("--audio", action="store_true")
-	p.add_argument("--images", action="store_true")
-	p.add_argument("--models", action="store_true")
-	p.add_argument("--shaders", action="store_true")
-	p.add_argument("--text", action="store_true")
-	p.add_argument("--video", action="store_true")
-	args = p.parse_args(sys.argv[1:])
-
-	format_args = {
+class UnityExtract:
+	FORMAT_ARGS = {
 		"audio": "AudioClip",
 		"images": "Texture2D",
 		"models": "Mesh",
@@ -93,24 +18,108 @@ def main():
 		"text": "TextAsset",
 		"video": "MovieTexture",
 	}
-	handle_formats = []
-	for a, classname in format_args.items():
-		if args.all or getattr(args, a):
-			handle_formats.append(classname)
+	def __init__(self, args):
+		self.parse_args(args)
 
-	for file in args.files:
-		if file.endswith(".assets"):
+	def parse_args(self, args):
+		p = ArgumentParser()
+		p.add_argument("files", nargs="+")
+		p.add_argument("--all", action="store_true")
+		p.add_argument("--audio", action="store_true")
+		p.add_argument("--images", action="store_true")
+		p.add_argument("--models", action="store_true")
+		p.add_argument("--shaders", action="store_true")
+		p.add_argument("--text", action="store_true")
+		p.add_argument("--video", action="store_true")
+		self.args = p.parse_args(args)
+
+		self.handle_formats = []
+		for a, classname in self.FORMAT_ARGS.items():
+			if self.args.all or getattr(self.args, a):
+				self.handle_formats.append(classname)
+
+	def run(self):
+		for file in self.args.files:
+			if file.endswith(".assets"):
+				with open(file, "rb") as f:
+					asset = unitypack.Asset.from_file(f)
+				self.handle_asset(asset)
+				continue
+
 			with open(file, "rb") as f:
-				asset = unitypack.Asset.from_file(f)
-			handle_asset(asset, handle_formats)
-			continue
+				bundle = unitypack.load(f)
 
-		with open(file, "rb") as f:
-			bundle = unitypack.load(f)
+			for asset in bundle.assets:
+				self.handle_asset(asset)
 
-		for asset in bundle.assets:
-			handle_asset(asset, handle_formats)
+		return 0
 
+	def get_output_path(self, filename):
+		basedir = "out"
+		path = os.path.join(basedir, filename)
+		dirs = os.path.dirname(path)
+		if not os.path.exists(dirs):
+			os.makedirs(dirs)
+		return path
+
+	def write_to_file(self, filename, contents, mode="w"):
+		path = self.get_output_path(filename)
+		with open(path, mode) as f:
+			written = f.write(contents)
+
+		print("Written %i bytes to %r" % (written, path))
+
+	def handle_asset(self, asset):
+		for id, obj in asset.objects.items():
+			if obj.type not in self.handle_formats:
+				continue
+
+			d = obj.read()
+
+			if obj.type == "AudioClip":
+				samples = extract_audioclip_samples(d)
+				for filename, sample in samples.items():
+					self.write_to_file(filename, sample, mode="wb")
+
+			elif obj.type == "MovieTexture":
+				filename = d.name + ".ogv"
+				self.write_to_file(filename, d.movie_data, mode="wb")
+
+			elif obj.type == "Shader":
+				self.write_to_file(d.name + ".cg", d.script)
+
+			elif obj.type == "Mesh":
+				try:
+					mesh_data = OBJMesh(d).export()
+					self.write_to_file(d.name + ".obj", mesh_data, mode="w")
+				except NotImplementedError as e:
+					print("WARNING: Could not extract %r (%s)" % (d, e))
+					mesh_data = pickle.dumps(d._obj)
+					self.write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
+
+			elif obj.type == "TextAsset":
+				if isinstance(d.script, bytes):
+					filename, mode = d.name + ".bin", "wb"
+				else:
+					filename, mode = d.name + ".txt", "w"
+				self.write_to_file(filename, mode)
+
+			elif obj.type == "Texture2D":
+				filename = d.name + ".png"
+				image = d.image
+				if image is None:
+					print("WARNING: %s is an empty image" % (filename))
+					self.write_to_file(filename, "")
+				else:
+					print("Decoding %r" % (d))
+					img = ImageOps.flip(image)
+					path = self.get_output_path(filename)
+					img.save(path)
+
+
+def main():
+	app = UnityExtract(sys.argv[1:])
+	exit(app.run())
 
 if __name__ == "__main__":
 	main()
