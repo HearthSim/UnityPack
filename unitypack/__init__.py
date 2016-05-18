@@ -544,6 +544,9 @@ class UnityEnvironment:
 		self.bundles = {}
 
 	def load(self, file):
+		for bundle in self.bundles.values():
+			if os.path.abspath(file.name) == os.path.abspath(bundle.path):
+				return bundle
 		ret = AssetBundle(self)
 		ret.load(file)
 		self.bundles[ret.name.lower()] = ret
