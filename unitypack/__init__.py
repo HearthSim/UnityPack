@@ -429,7 +429,7 @@ class Asset:
 		if self.format >= 6:
 			num_refs = buf.read_uint()
 			for i in range(num_refs):
-				ref = AssetRef()
+				ref = AssetRef(self)
 				ref.load(buf)
 				self.asset_refs.append(ref)
 
@@ -468,6 +468,9 @@ class Asset:
 
 
 class AssetRef:
+	def __init__(self, source):
+		self.source = source
+
 	def load(self, buf):
 		self.asset_path = buf.read_string()
 		self.guid = UUID(hexlify(buf.read(16)).decode("utf-8"))
