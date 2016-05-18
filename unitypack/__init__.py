@@ -581,6 +581,7 @@ class UnityEnvironment:
 		raise KeyError("No such asset: %r" % (name))
 
 
-def load(file):
-	env = UnityEnvironment()
+def load(file, env=None):
+	if env is None:
+		env = UnityEnvironment()
 	return env.load(file)
