@@ -551,7 +551,7 @@ class UnityEnvironment:
 
 	def discover(self, name):
 		for bundle in list(self.bundles.values()):
-			dirname = os.path.dirname(bundle.path)
+			dirname = os.path.dirname(os.path.abspath(bundle.path))
 			for filename in os.listdir(dirname):
 				basename = os.path.splitext(os.path.basename(filename))[0]
 				if name.lower() == "cab-" + basename.lower():
