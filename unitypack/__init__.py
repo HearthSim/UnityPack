@@ -564,7 +564,7 @@ class UnityEnvironment:
 		u = urlparse(url)
 		assert u.scheme == "archive"
 
-		archive, name = os.path.split(u.path.lstrip("/"))
+		archive, name = os.path.split(u.path.lstrip("/").lower())
 
 		if archive not in self.bundles:
 			self.discover(archive)
@@ -576,7 +576,7 @@ class UnityEnvironment:
 		bundle = self.bundles[archive]
 
 		for asset in bundle.assets:
-			if asset.name.lower() == name.lower():
+			if asset.name.lower() == name:
 				return asset
 		raise KeyError("No such asset: %r" % (name))
 
