@@ -498,6 +498,7 @@ class AssetBundle:
 
 	def load(self, file):
 		buf = BinaryReader(file, endian=">")
+		self.path = file.name
 
 		self.signature = buf.read_string()
 		self.format_version = buf.read_int()
@@ -548,6 +549,15 @@ class UnityEnvironment:
 		self.bundles[ret.name.lower()] = ret
 		return ret
 
+	def discover(self, name):
+		for bundle in list(self.bundles.values()):
+			dirname = os.path.dirname(bundle.path)
+			for filename in os.listdir(dirname):
+				basename = os.path.splitext(os.path.basename(filename))[0]
+				if name.lower() == "cab-" + basename.lower():
+					with open(os.path.join(dirname, filename), "rb") as f:
+						self.load(f)
+
 	def get_asset(self, url):
 		if not url:
 			return None
@@ -557,11 +567,16 @@ class UnityEnvironment:
 		archive, name = os.path.split(u.path.lstrip("/"))
 
 		if archive not in self.bundles:
-			raise NotImplementedError("Cannot find %r in %r" % (archive, self.bundles))
+			self.discover(archive)
+
+			# Still didn't find it? Give up...
+			if archive not in self.bundles:
+				raise NotImplementedError("Cannot find %r in %r" % (archive, self.bundles))
+
 		bundle = self.bundles[archive]
 
 		for asset in bundle.assets:
-			if asset.name == name:
+			if asset.name.lower() == name.lower():
 				return asset
 		raise KeyError("No such asset: %r" % (name))
 
