@@ -2,7 +2,7 @@ import struct
 from enum import IntEnum
 from io import BytesIO
 from .object import Object, field
-from .. import dds
+from PIL.DdsImagePlugin import _dxt1, _dxt5
 
 
 class TextureFormat(IntEnum):
@@ -127,13 +127,13 @@ class Texture2D(Texture):
 	@property
 	def decoded_data(self):
 		if self.format == TextureFormat.DXT1:
-			codec = dds.dxt1
+			codec = _dxt1
 		elif self.format == TextureFormat.DXT5:
-			codec = dds.dxt5
+			codec = _dxt5
 		else:
 			return self.data
 
-		return codec(self.data, self.width, self.height)
+		return codec(BytesIO(self.data), self.width, self.height)
 
 	@property
 	def image(self):
