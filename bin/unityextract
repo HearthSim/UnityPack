@@ -103,7 +103,7 @@ class UnityExtract:
 					filename, mode = d.name + ".bin", "wb"
 				else:
 					filename, mode = d.name + ".txt", "w"
-				self.write_to_file(filename, mode)
+				self.write_to_file(filename, d.script, mode=mode)
 
 			elif obj.type == "Texture2D":
 				filename = d.name + ".png"
