@@ -13,7 +13,7 @@ from .utils import BinaryReader
 
 __author__ = "Jerome Leclanche"
 __email__ = "jerome@leclan.ch"
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 SIGNATURE_WEB = "UnityWeb"
