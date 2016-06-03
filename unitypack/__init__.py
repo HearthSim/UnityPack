@@ -564,10 +564,12 @@ class UnityEnvironment:
 	def get_asset(self, url):
 		if not url:
 			return None
-		u = urlparse(url)
-		assert u.scheme == "archive"
 
-		archive, name = os.path.split(u.path.lstrip("/").lower())
+		u = urlparse(url)
+		if u.scheme == "archive":
+			archive, name = os.path.split(u.path.lstrip("/").lower())
+		else:
+			raise NotImplementedError("Unsupported scheme: %r" % (u.scheme))
 
 		if archive not in self.bundles:
 			self.discover(archive)
