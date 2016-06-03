@@ -295,8 +295,8 @@ class ObjectInfo:
 
 				result = load_object(type, result)
 				if t == "StreamedResource":
-					if self.asset.bundle:
-						result.asset = self.asset.bundle.environment.get_asset(result.source)
+					if self.asset.bundle and self.asset.bundle.environment:
+						result.asset = self.asset.get_asset(result.source)
 					else:
 						logging.warning("StreamedResource not available without bundle")
 						result.asset = None
@@ -366,15 +366,24 @@ class Asset:
 		ret.data = BinaryReader(data, endian=">")
 		buf.seek(ofs)
 		ret.bundle = bundle
+		ret.environment = bundle.environment
 		return ret
 
 	@classmethod
-	def from_file(cls, file):
+	def from_file(cls, file, environment=None):
 		ret = cls()
 		ret.name = file.name
 		ret.data = BinaryReader(BytesIO(file.read()), endian=">")
 		ret.load(ret.data)
+		base_path = os.path.abspath(os.path.dirname(file.name))
+		if environment is None:
+			ret.environment = UnityEnvironment(base_path=base_path)
 		return ret
+
+	def get_asset(self, path):
+		if ":" in path:
+			return self.environment.get_asset(path)
+		return self.environment.get_asset_by_filename(path)
 
 	def __init__(self):
 		self.objects = {}
@@ -479,7 +488,7 @@ class AssetRef:
 		self.asset = None
 
 	def resolve(self):
-		return self.source.bundle.environment.get_asset(self.file_path)
+		return self.source.get_asset(self.file_path)
 
 	def __repr__(self):
 		return "<%s (asset_path=%r, guid=%r, type=%r, file_path=%r)>" % (
@@ -540,8 +549,10 @@ class AssetBundle:
 
 
 class UnityEnvironment:
-	def __init__(self):
+	def __init__(self, base_path=""):
 		self.bundles = {}
+		self.assets = {}
+		self.base_path = base_path
 
 	def load(self, file):
 		for bundle in self.bundles.values():
@@ -560,6 +571,15 @@ class UnityEnvironment:
 				if name.lower() == "cab-" + basename.lower():
 					with open(os.path.join(dirname, filename), "rb") as f:
 						self.load(f)
+
+	def get_asset_by_filename(self, name):
+		if name not in self.assets:
+			path = os.path.join(self.base_path, name)
+			if not os.path.exists(path):
+				raise KeyError("No such asset: %r" % (name))
+			with open(path, "rb") as f:
+				self.assets[name] = Asset.from_file(f)
+		return self.assets[name]
 
 	def get_asset(self, url):
 		if not url:
