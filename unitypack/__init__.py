@@ -580,7 +580,7 @@ class UnityEnvironment:
 				basename = os.path.splitext(os.path.basename(filename))[0]
 				if name.lower() == "cab-" + basename.lower():
 					with open(os.path.join(dirname, filename), "rb") as f:
-						self.load(f)
+						return self.load(f)
 
 	def get_asset_by_filename(self, name):
 		if name not in self.assets:
