@@ -569,6 +569,8 @@ class UnityEnvironment:
 		ret = AssetBundle(self)
 		ret.load(file)
 		self.bundles[ret.name.lower()] = ret
+		for asset in ret.assets:
+			self.assets[asset.name.lower()] = asset
 		return ret
 
 	def discover(self, name):
