@@ -585,11 +585,22 @@ class UnityEnvironment:
 	def get_asset_by_filename(self, name):
 		if name not in self.assets:
 			path = os.path.join(self.base_path, name)
-			if not os.path.exists(path):
-				raise KeyError("No such asset: %r" % (name))
-			with open(path, "rb") as f:
-				self.assets[name] = Asset.from_file(f)
+			if os.path.exists(path):
+				with open(path, "rb") as f:
+					self.assets[name] = Asset.from_file(f)
+			else:
+				self.discover(name)
+				self.populate_assets()
+				if name not in self.assets:
+					raise KeyError("No such asset: %r" % (name))
 		return self.assets[name]
+
+	def populate_assets(self):
+		for bundle in self.bundles.values():
+			for asset in bundle.assets:
+				asset_name = asset.name.lower()
+				if asset_name not in self.assets:
+					self.assets[asset_name] = asset
 
 	def get_asset(self, url):
 		if not url:
