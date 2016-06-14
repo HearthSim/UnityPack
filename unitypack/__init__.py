@@ -312,17 +312,13 @@ class ObjectPointer:
 		self.type = type
 		self.source_asset = asset
 
-	def __bool__(self):
-		return not (self.file_id == 0 and self.path_id == 0)
-
-	def load(self, buf):
-		self.file_id = buf.read_int()
-		self.path_id = self.source_asset.read_id(buf)
-
 	def __repr__(self):
 		return "%s(file_id=%r, path_id=%r)" % (
 			self.__class__.__name__, self.file_id, self.path_id
 		)
+
+	def __bool__(self):
+		return not (self.file_id == 0 and self.path_id == 0)
 
 	@property
 	def asset(self):
@@ -334,6 +330,10 @@ class ObjectPointer:
 	@property
 	def object(self):
 		return self.asset.objects[self.path_id]
+
+	def load(self, buf):
+		self.file_id = buf.read_int()
+		self.path_id = self.source_asset.read_id(buf)
 
 	def resolve(self):
 		return self.object.read()
@@ -480,6 +480,11 @@ class AssetRef:
 	def __init__(self, source):
 		self.source = source
 
+	def __repr__(self):
+		return "<%s (asset_path=%r, guid=%r, type=%r, file_path=%r)>" % (
+			self.__class__.__name__, self.asset_path, self.guid, self.type, self.file_path
+		)
+
 	def load(self, buf):
 		self.asset_path = buf.read_string()
 		self.guid = UUID(hexlify(buf.read(16)).decode("utf-8"))
@@ -490,16 +495,16 @@ class AssetRef:
 	def resolve(self):
 		return self.source.get_asset(self.file_path)
 
-	def __repr__(self):
-		return "<%s (asset_path=%r, guid=%r, type=%r, file_path=%r)>" % (
-			self.__class__.__name__, self.asset_path, self.guid, self.type, self.file_path
-		)
-
 
 class AssetBundle:
 	def __init__(self, environment):
 		self.environment = environment
 		self.assets = []
+
+	def __repr__(self):
+		if hasattr(self, "name"):
+			return "<%s %r>" % (self.__class__.__name__, self.name)
+		return "<%s>" % (self.__class__.__name__)
 
 	@property
 	def compressed(self):
@@ -553,6 +558,9 @@ class UnityEnvironment:
 		self.bundles = {}
 		self.assets = {}
 		self.base_path = base_path
+
+	def __repr__(self):
+		return "%s(base_path=%r)" % (self.__class__.__name__, self.base_path)
 
 	def load(self, file):
 		for bundle in self.bundles.values():
