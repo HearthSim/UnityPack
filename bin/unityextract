@@ -12,12 +12,14 @@ from unitypack.utils import extract_audioclip_samples
 class UnityExtract:
 	FORMAT_ARGS = {
 		"audio": "AudioClip",
+		"fonts": "Font",
 		"images": "Texture2D",
 		"models": "Mesh",
 		"shaders": "Shader",
 		"text": "TextAsset",
 		"video": "MovieTexture",
 	}
+
 	def __init__(self, args):
 		self.parse_args(args)
 
@@ -26,6 +28,7 @@ class UnityExtract:
 		p.add_argument("files", nargs="+")
 		p.add_argument("--all", action="store_true")
 		p.add_argument("--audio", action="store_true")
+		p.add_argument("--fonts", action="store_true")
 		p.add_argument("--images", action="store_true")
 		p.add_argument("--models", action="store_true")
 		p.add_argument("--shaders", action="store_true")
@@ -97,6 +100,9 @@ class UnityExtract:
 					print("WARNING: Could not extract %r (%s)" % (d, e))
 					mesh_data = pickle.dumps(d._obj)
 					self.write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
+
+			elif obj.type == "Font":
+				self.write_to_file(d.name + ".ttf", d.data, mode="wb")
 
 			elif obj.type == "TextAsset":
 				if isinstance(d.script, bytes):

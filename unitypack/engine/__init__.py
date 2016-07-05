@@ -4,6 +4,7 @@ from .animation import (
 )
 from .audio import AudioClip, AudioSource, StreamedResource
 from .component import Behaviour, Component, Transform
+from .font import Font
 from .mesh import Mesh, SubMesh, VertexData, MeshFilter
 from .movie import MovieTexture
 from .object import GameObject
