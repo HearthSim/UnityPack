@@ -4,7 +4,6 @@ import pickle
 import sys
 import unitypack
 from argparse import ArgumentParser
-from PIL import ImageOps
 from unitypack.export import OBJMesh
 from unitypack.utils import extract_audioclip_samples
 
@@ -113,6 +112,11 @@ class UnityExtract:
 
 			elif obj.type == "Texture2D":
 				filename = d.name + ".png"
+				try:
+					from PIL import ImageOps
+				except ImportError:
+					print("WARNING: Pillow not available. Skipping %r." % (filename))
+					continue
 				image = d.image
 				if image is None:
 					print("WARNING: %s is an empty image" % (filename))
