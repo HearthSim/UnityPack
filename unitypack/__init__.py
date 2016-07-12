@@ -16,8 +16,9 @@ __email__ = "jerome@leclan.ch"
 __version__ = "0.5"
 
 
-SIGNATURE_WEB = "UnityWeb"
 SIGNATURE_RAW = "UnityRaw"
+SIGNATURE_WEB = "UnityWeb"
+SIGNATURE_FS = "UnityFS"
 
 
 def get_asset(name):
@@ -534,7 +535,7 @@ class AssetBundle:
 			self.compressed_file_size = buf.read_uint()  # with header_size
 			self.asset_header_size = buf.read_uint()
 
-		assert self.signature in (SIGNATURE_RAW, SIGNATURE_WEB)
+		assert self.signature in (SIGNATURE_RAW, SIGNATURE_WEB, SIGNATURE_FS), self.signature
 
 		_ = buf.read_int()
 		_ = buf.read_byte()
