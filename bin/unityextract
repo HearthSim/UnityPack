@@ -4,6 +4,7 @@ import pickle
 import sys
 import unitypack
 from argparse import ArgumentParser
+from io import BytesIO
 from unitypack.export import OBJMesh
 from unitypack.utils import extract_audioclip_samples
 
@@ -121,9 +122,12 @@ class UnityExtract:
 					continue
 
 				print("Decoding %r" % (d))
+				# Texture2D objects are flipped
 				img = ImageOps.flip(image)
-				path = self.get_output_path(filename)
-				img.save(path)
+				# PIL has no method to write to a string :/
+				output = BytesIO()
+				img.save(output, format="png")
+				self.write_to_file(filename, output.getvalue(), mode="wb")
 
 
 def main():
