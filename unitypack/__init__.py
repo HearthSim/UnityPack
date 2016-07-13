@@ -7,8 +7,8 @@ from io import BytesIO
 from urllib.parse import urlparse
 from uuid import UUID
 from . import engine as UnityEngine
-from .enums import RuntimePlatform
-from .utils import BinaryReader
+from .enums import CompressionType, RuntimePlatform
+from .utils import BinaryReader, lz4_decompress
 
 
 __author__ = "Jerome Leclanche"
@@ -150,7 +150,6 @@ class TypeMetadata:
 	def load(self, buf, format=None):
 		if format is None:
 			format = self.asset.format
-		offset = buf.tell()
 		self.generator_version = buf.read_string()
 		self.target_platform = RuntimePlatform(buf.read_uint())
 
@@ -344,7 +343,14 @@ class Asset:
 	@classmethod
 	def from_bundle(cls, bundle, buf):
 		ret = cls()
+		ret.bundle = bundle
+		ret.environment = bundle.environment
 		offset = buf.tell()
+
+		if bundle.signature == SIGNATURE_FS:
+			ret.data = BinaryReader(BytesIO(buf.read()), endian=">")
+			return ret
+
 		if not bundle.compressed:
 			ret.name = buf.read_string()
 			header_size = buf.read_uint()
@@ -366,8 +372,7 @@ class Asset:
 			data = BytesIO(buf.read())
 		ret.data = BinaryReader(data, endian=">")
 		buf.seek(ofs)
-		ret.bundle = bundle
-		ret.environment = bundle.environment
+
 		return ret
 
 	@classmethod
@@ -519,6 +524,14 @@ class AssetBundle:
 		self.format_version = buf.read_int()
 		self.unity_version = buf.read_string()
 		self.generator_version = buf.read_string()
+
+		if self.signature == SIGNATURE_FS:
+			self.load_unityfs(buf)
+		else:
+			assert self.signature in (SIGNATURE_RAW, SIGNATURE_WEB), self.signature
+			self.load_raw(buf)
+
+	def load_raw(self, buf):
 		self.file_size = buf.read_uint()
 		self.header_size = buf.read_int()
 
@@ -535,23 +548,69 @@ class AssetBundle:
 			self.compressed_file_size = buf.read_uint()  # with header_size
 			self.asset_header_size = buf.read_uint()
 
-		assert self.signature in (SIGNATURE_RAW, SIGNATURE_WEB, SIGNATURE_FS), self.signature
-
-		_ = buf.read_int()
-		_ = buf.read_byte()
+		buf.read_int()
+		buf.read_byte()
 		self.name = buf.read_string()
 
 		# Preload assets
 		buf.seek(self.header_size)
 		if not self.compressed:
-			self.num_assets = buf.read_int()
+			num_assets = buf.read_int()
 		else:
-			self.num_assets = 1
-		for i in range(self.num_assets):
+			num_assets = 1
+		for i in range(num_assets):
 			asset = Asset.from_bundle(self, buf)
 			if not asset.is_resource:
 				asset.load(asset.data)
 			self.assets.append(asset)
+
+	def read_compressed_data(self, buf, compression):
+		data = buf.read(self.ciblock_size)
+		if compression == CompressionType.NONE:
+			return data
+
+		if compression in (CompressionType.LZ4, CompressionType.LZ4HC):
+			return lz4_decompress(data, self.uiblock_size)
+
+		raise NotImplementedError("Unimplemented compression method: %r" % (compression))
+
+	def load_unityfs(self, buf):
+		self.file_size = buf.read_int64()
+		self.ciblock_size = buf.read_uint()
+		self.uiblock_size = buf.read_uint()
+		flags = buf.read_uint()
+		compression = CompressionType(flags & 0x3F)
+		data = self.read_compressed_data(buf, compression)
+
+		blk = BinaryReader(BytesIO(data), endian=">")
+		self.guid = blk.read(16)
+		num_blocks = blk.read_int()
+		blocks = []
+		for i in range(num_blocks):
+			bcsize, busize = blk.read_int(), blk.read_int()
+			bflags = blk.read_int16()
+			blocks.append((bcsize, busize, bflags))
+
+		num_nodes = blk.read_int()
+		nodes = []
+		for i in range(num_nodes):
+			ofs = blk.read_int64()
+			size = blk.read_int64()
+			status = blk.read_int()
+			name = blk.read_string()
+			nodes.append((ofs, size, status, name))
+
+		basepos = buf.tell()
+		for ofs, size, status, name in nodes:
+			buf.seek(basepos + ofs)
+			asset = Asset.from_bundle(self, buf)
+			asset.name = name
+			if not asset.is_resource:
+				asset.load(asset.data)
+			self.assets.append(asset)
+
+		# Hacky
+		self.name = self.assets[0].name
 
 
 class UnityEnvironment:

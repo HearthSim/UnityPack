@@ -2,6 +2,17 @@ import struct
 from os import SEEK_CUR
 
 
+def lz4_decompress(data, size):
+	try:
+		import lz4
+	except ImportError:
+		raise RuntimeError("python-lz4 is required to read UnityFS files")
+
+	# https://github.com/python-lz4/python-lz4/issues/6
+	data = struct.pack("i", size) + data
+	return lz4.loads(data)
+
+
 def extract_audioclip_samples(d) -> dict:
 	"""
 	Extract all the sample data from an AudioClip and

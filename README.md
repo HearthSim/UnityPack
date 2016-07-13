@@ -2,6 +2,10 @@
 
 A library to deserialize Unity3D Assets and AssetBundles files (*.unity3d).
 
+## Dependencies
+
+* [python-lz4](https://github.com/python-lz4/python-lz4) (For UnityFS-compressed files)
+
 
 ## How Unity packs assets
 

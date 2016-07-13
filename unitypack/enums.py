@@ -1,6 +1,21 @@
 from enum import IntEnum
 
 
+class CompressionType(IntEnum):
+	NONE = 0
+	LZMA = 1
+	LZ4 = 2
+	LZ4HC = 3
+	LZHAM = 4
+
+
+class NodeFlags(IntEnum):
+	Default = 0
+	Directory = 1
+	Deleted = 2
+	SerializedFile = 3
+
+
 class RuntimePlatform(IntEnum):
 	OSXEditor = 0
 	OSXPlayer = 1
