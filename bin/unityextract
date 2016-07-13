@@ -28,8 +28,8 @@ class UnityExtract:
 		p.add_argument("--all", action="store_true", help="Extract all supported types")
 		for arg, clsname in self.FORMAT_ARGS.items():
 			p.add_argument("--" + arg, action="store_true", help="Extract %s" % (clsname))
+		p.add_argument("-o", "--outdir", nargs="?", default="", help="Output directory")
 		p.add_argument("--filter", nargs="*", help="Filter extraction for a specific name")
-		p.add_argument("--outdir", nargs="?", default="")
 		self.args = p.parse_args(args)
 
 		self.handle_formats = []
