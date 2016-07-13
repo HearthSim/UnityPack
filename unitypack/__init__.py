@@ -146,6 +146,8 @@ class TypeMetadata:
 		self.type_trees = {}
 		self.hashes = {}
 		self.asset = asset
+		self.generator_version = ""
+		self.target_platform = None
 
 	def load(self, buf, format=None):
 		if format is None:
@@ -154,10 +156,10 @@ class TypeMetadata:
 		self.target_platform = RuntimePlatform(buf.read_uint())
 
 		if format >= 13:
-			self.has_type_trees = buf.read_boolean()
-			self.num_types = buf.read_int()
+			has_type_trees = buf.read_boolean()
+			num_types = buf.read_int()
 
-			for i in range(self.num_types):
+			for i in range(num_types):
 				class_id = buf.read_int()
 				if class_id < 0:
 					hash = buf.read(0x20)
@@ -166,7 +168,7 @@ class TypeMetadata:
 
 				self.hashes[class_id] = hash
 
-				if self.has_type_trees:
+				if has_type_trees:
 					tree = TypeTree(format)
 					tree.load(buf)
 					self.type_trees[class_id] = tree
