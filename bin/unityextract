@@ -33,6 +33,7 @@ class UnityExtract:
 		p.add_argument("--shaders", action="store_true")
 		p.add_argument("--text", action="store_true")
 		p.add_argument("--video", action="store_true")
+		p.add_argument("--filter", nargs="*", help="Filter extraction for a specific name")
 		p.add_argument("--outdir", nargs="?", default="")
 		self.args = p.parse_args(args)
 
@@ -78,6 +79,8 @@ class UnityExtract:
 				continue
 
 			d = obj.read()
+			if self.args.filter and d.name not in self.args.filter:
+				continue
 
 			if obj.type == "AudioClip":
 				samples = extract_audioclip_samples(d)
