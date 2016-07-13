@@ -5,6 +5,7 @@ import sys
 import unitypack
 from argparse import ArgumentParser
 from io import BytesIO
+from unitypack.asset import Asset
 from unitypack.export import OBJMesh
 from unitypack.utils import extract_audioclip_samples
 
@@ -43,7 +44,7 @@ class UnityExtract:
 		for file in self.args.files:
 			if file.endswith(".assets"):
 				with open(file, "rb") as f:
-					asset = unitypack.Asset.from_file(f)
+					asset = Asset.from_file(f)
 				self.handle_asset(asset)
 				continue
 
