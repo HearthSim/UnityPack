@@ -3,7 +3,7 @@ from .utils import BinaryReader
 
 
 class OBJVector2:
-	def __init__(self, x = 0, y = 0):
+	def __init__(self, x=0, y=0):
 		self.x = x
 		self.y = y
 
@@ -17,7 +17,7 @@ class OBJVector2:
 
 
 class OBJVector3(OBJVector2):
-	def __init__(self, x = 0, y = 0, z = 0):
+	def __init__(self, x=0, y=0, z=0):
 		super().__init__(x, y)
 		self.z = z
 
@@ -31,7 +31,7 @@ class OBJVector3(OBJVector2):
 
 
 class OBJVector4(OBJVector3):
-	def __init__(self, x = 0, y = 0, z = 0, w = 0):
+	def __init__(self, x=0, y=0, z=0, w=0):
 		super().__init__(x, y, z)
 		self.w = w
 
@@ -101,7 +101,7 @@ class MeshData:
 						ch = channels[j]
 						# format == 1, use half-floats (16 bit)
 						if ch["format"] == 1:
-							raise NotImplementedError("(%s) 16 bit floats are not supported" % (mesh.name))
+							raise NotImplementedError("(%r) 16 bit floats are not supported" % (self.mesh))
 					# read the appropriate vertex value into the correct list
 					if ch and ch["dimension"] > 0 and ch["stream"] == s:
 						if j == 0:
@@ -119,9 +119,9 @@ class MeshData:
 								self.uv3.append(OBJVector2().read(buf))
 							else:
 								self.tangents.append(OBJVector4().read(buf))
-						elif j == 6: # for unity 5+
+						elif j == 6:  # for unity 5+
 							self.uv4.append(OBJVector2().read(buf))
-						elif j == 7: # for unity 5+
+						elif j == 7:  # for unity 5+
 							self.tangents.append(OBJVector4().read(buf))
 			# TODO investigate possible alignment here, after each stream
 
