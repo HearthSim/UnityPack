@@ -31,6 +31,7 @@ class UnityExtract:
 		for arg, clsname in self.FORMAT_ARGS.items():
 			p.add_argument("--" + arg, action="store_true", help="Extract %s" % (clsname))
 		p.add_argument("-o", "--outdir", nargs="?", default="", help="Output directory")
+		p.add_argument("--as-asset", action="store_true", help="Force open files as Asset format")
 		p.add_argument("--filter", nargs="*", help="Filter extraction for a specific name")
 		p.add_argument("-n", "--dry-run", action="store_true", help="Skip writing files")
 		self.args = p.parse_args(args)
@@ -42,7 +43,7 @@ class UnityExtract:
 
 	def run(self):
 		for file in self.args.files:
-			if file.endswith(".assets"):
+			if self.args.as_asset or file.endswith(".assets"):
 				with open(file, "rb") as f:
 					asset = Asset.from_file(f)
 				self.handle_asset(asset)
