@@ -65,7 +65,7 @@ Included are two scripts which use unitypack for some common operations:
 
 ### Asset extraction
 
-`extract.py` can extract common types of data from assets and asset bundles, much like Disunity.
+`unityextract` can extract common types of data from assets and asset bundles, much like Disunity.
 By default, it will extract all known extractable types:
 
 * `AudioClip` objects will be converted back to their original format. Note that recent Unity3D
@@ -79,12 +79,12 @@ By default, it will extract all known extractable types:
 * `Shader` objects work essentially the same way as TextAsset objects, but will be extracted to
   .cg files.
 
-Filters for individual formats are available. Run `./extract.py --help` for the full list.
+Filters for individual formats are available. Run `unityextract --help` for the full list.
 
 
 ### YAML conversion
 
-`bundle_to_yaml.py` can convert AssetBundles to YAML output. YAML is more appropriate than JSON
+`unity2yaml` can convert AssetBundles to YAML output. YAML is more appropriate than JSON
 due to the recursive, pointer-heavy and class-heavy nature of the Unity3D format.
 
 When run with the `--strip` argument, extractable data will be stripped out. This can make the
