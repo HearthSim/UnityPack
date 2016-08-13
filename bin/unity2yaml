@@ -4,6 +4,8 @@ import sys
 import unitypack
 import yaml
 from argparse import ArgumentParser
+from unitypack.asset import Asset
+from unitypack.object import ObjectPointer
 
 
 def handle_asset(asset):
@@ -15,12 +17,12 @@ def handle_asset(asset):
 
 def asset_representer(dumper, data):
 	return dumper.represent_scalar("!asset", data.name)
-yaml.add_representer(unitypack.Asset, asset_representer)
+yaml.add_representer(Asset, asset_representer)
 
 
 def objectpointer_representer(dumper, data):
 	return dumper.represent_sequence("!PPtr", [data.file_id, data.path_id])
-yaml.add_representer(unitypack.ObjectPointer, objectpointer_representer)
+yaml.add_representer(ObjectPointer, objectpointer_representer)
 
 
 def unityobj_representer(dumper, data):
@@ -69,7 +71,7 @@ def main():
 	for file in args.files:
 		if file.endswith(".assets"):
 			with open(file, "rb") as f:
-				asset = unitypack.Asset.from_file(f)
+				asset = Asset.from_file(f)
 			handle_asset(asset)
 			continue
 
