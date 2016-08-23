@@ -1,4 +1,3 @@
-import struct
 from enum import IntEnum
 from io import BytesIO
 from .object import Object, field
@@ -98,7 +97,17 @@ class Sprite(Object):
 
 
 class Material(Object):
-	pass
+	global_illumination_flags = field("m_LightmapFlags")
+	render_queue = field("m_CustomRenderQueue")
+	shader = field("m_Shader")
+	shader_keywords = field("m_ShaderKeywords")
+
+	@property
+	def saved_properties(self):
+		def _unpack_prop(value):
+			for vk, vv in value:
+				yield vk["name"], vv
+		return {k: dict(_unpack_prop(v)) for k, v in self._obj["m_SavedProperties"].items()}
 
 
 class Texture(Object):
