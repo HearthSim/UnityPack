@@ -120,6 +120,11 @@ class ObjectInfo:
 					result = []
 					for i in range(size):
 						result.append(self.read_value(array_type, buf))
+			elif t == "pair":
+				assert len(type.children) == 2
+				first = self.read_value(type.children[0], buf)
+				second = self.read_value(type.children[1], buf)
+				result = (first, second)
 			else:
 				result = {}
 
