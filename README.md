@@ -72,7 +72,7 @@ By default, it will extract all known extractable types:
   versions pack these as FSB files, so [python-fsb5](https://github.com/hearthsim/python-fsb5)
   is required to convert them back.
 * `Texture2D` objects will be converted to png files. Not all Texture2D formats are supported.
-  A recent version of [Pillow](https://github.com/python-pillow/Pillow) is required for this.
+  [Pillow](https://github.com/python-pillow/Pillow) version >= 3.4 is required for this.
 * `Mesh` objects (3D objects) will be pickled. Pull requests implementing a .obj converter are
   welcome and wanted.
 * `TextAsset` objects will be extracted as plain text, to .txt files

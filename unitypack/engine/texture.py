@@ -1,5 +1,4 @@
 from enum import IntEnum
-from io import BytesIO
 from .object import Object, field
 
 
@@ -126,6 +125,7 @@ class Texture2D(Texture):
 	texture_dimension = field("m_TextureDimension")
 	mipmap = field("m_MipMap")
 	complete_image_size = field("m_CompleteImageSize")
+	stream_data = field("m_StreamData")
 
 	def __repr__(self):
 		return "<%s %s (%s %ix%i)>" % (
@@ -133,17 +133,15 @@ class Texture2D(Texture):
 		)
 
 	@property
-	def decoded_data(self):
-		from PIL.DdsImagePlugin import _dxt1, _dxt5
+	def image_data(self):
+		if self.stream_data:
+			path = self.stream_data.get("path")
+			if path:
+				offset = self.stream_data["offset"]
+				size = self.stream_data["size"]
+				return self.asset.environment.get_stream(path, offset, size)
 
-		if self.format == TextureFormat.DXT1:
-			codec = _dxt1
-		elif self.format == TextureFormat.DXT5:
-			codec = _dxt5
-		else:
-			return self.data
-
-		return codec(BytesIO(self.data), self.width, self.height)
+		return self.data
 
 	@property
 	def image(self):
@@ -152,12 +150,21 @@ class Texture2D(Texture):
 		if self.format not in IMPLEMENTED_FORMATS:
 			raise NotImplementedError("Unimplemented format %r" % (self.format))
 
+		if self.format == TextureFormat.DXT1:
+			codec = "bcn"
+			args = (1, )
+		elif self.format == TextureFormat.DXT5:
+			codec = "bcn"
+			args = (3, )
+		else:
+			codec = "raw"
+			args = (self.format.pixel_format, )
+
+		mode = "RGB" if self.format.pixel_format == "RGB" else "RGBA"
 		size = (self.width, self.height)
-		raw_mode = self.format.pixel_format
-		mode = "RGB" if raw_mode == "RGB" else "RGBA"
-		data = bytes(self.decoded_data)
+		data = bytes(self.image_data)
 
 		if not data and size == (0, 0):
 			return None
 
-		return Image.frombytes(mode, size, data, "raw", raw_mode)
+		return Image.frombytes(mode, size, data, codec, args)
