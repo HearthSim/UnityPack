@@ -17,6 +17,9 @@ class TextureFormat(IntEnum):
 	RGBA4444 = 13
 	BGRA32 = 14
 
+	DXT1Crunched = 28
+	DXT5Crunched = 29
+
 	# PowerVR
 	PVRTC_RGB2 = PVRTC_2BPP_RGB = 30
 	PVRTC_RGBA2 = PVRTC_2BPP_RGBA = 31
@@ -82,7 +85,9 @@ IMPLEMENTED_FORMATS = (
 	TextureFormat.RGBA32,
 	TextureFormat.ARGB32,
 	TextureFormat.DXT1,
+	TextureFormat.DXT1Crunched,
 	TextureFormat.DXT5,
+	TextureFormat.DXT5Crunched,
 )
 
 
@@ -150,10 +155,10 @@ class Texture2D(Texture):
 		if self.format not in IMPLEMENTED_FORMATS:
 			raise NotImplementedError("Unimplemented format %r" % (self.format))
 
-		if self.format == TextureFormat.DXT1:
+		if self.format in (TextureFormat.DXT1, TextureFormat.DXT1Crunched):
 			codec = "bcn"
 			args = (1, )
-		elif self.format == TextureFormat.DXT5:
+		elif self.format in (TextureFormat.DXT5, TextureFormat.DXT5Crunched):
 			codec = "bcn"
 			args = (3, )
 		else:
