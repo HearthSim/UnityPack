@@ -71,6 +71,7 @@ class Asset:
 		self.bundle = None
 		self.name = ""
 		self.long_object_ids = False
+		self.tree = TypeMetadata(self)
 
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
@@ -90,7 +91,6 @@ class Asset:
 			if self.endianness == 0:
 				buf.endian = "<"
 
-		self.tree = TypeMetadata(self)
 		self.tree.load(buf)
 
 		if 7 <= self.format <= 13:
