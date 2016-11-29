@@ -16,9 +16,10 @@ class Asset:
 		ret.bundle = bundle
 		ret.environment = bundle.environment
 		offset = buf.tell()
+		ret._buf = BinaryReader(buf, endian=">")
 
 		if bundle.is_unityfs:
-			ret.data = BinaryReader(BytesIO(buf.read()), endian=">")
+			ret._buf_ofs = buf.tell()
 			return ret
 
 		if not bundle.compressed:
@@ -33,15 +34,13 @@ class Asset:
 		if bundle.compressed:
 			dec = lzma.LZMADecompressor()
 			data = dec.decompress(buf.read())
-			data = BytesIO(data[header_size:])
+			ret._buf = BinaryReader(BytesIO(data[header_size:]), endian=">")
+			ret._buf_ofs = 0
+			buf.seek(ofs)
 		else:
+			ret._buf_ofs = offset + header_size - 4
 			if ret.is_resource:
-				buf.seek(offset + header_size - 4 - len(ret.name))
-			else:
-				buf.seek(offset + header_size - 4)
-			data = BytesIO(buf.read())
-		ret.data = BinaryReader(data, endian=">")
-		buf.seek(ofs)
+				ret._buf_ofs -= len(ret.name)
 
 		return ret
 
@@ -49,8 +48,8 @@ class Asset:
 	def from_file(cls, file, environment=None):
 		ret = cls()
 		ret.name = file.name
-		ret.data = BinaryReader(BytesIO(file.read()), endian=">")
-		ret.load(ret.data)
+		ret._buf_ofs = file.tell()
+		ret._buf = file
 		base_path = os.path.abspath(os.path.dirname(file.name))
 		if environment is None:
 			from .environment import UnityEnvironment
@@ -63,6 +62,7 @@ class Asset:
 		return self.environment.get_asset_by_filename(path)
 
 	def __init__(self):
+		self._buf_ofs = None
 		self._objects = {}
 		self.adds = []
 		self.asset_refs = [self]
@@ -80,17 +80,20 @@ class Asset:
 	@property
 	def objects(self):
 		if not self.loaded:
-			self.load(self.data)
+			self.load()
 		return self._objects
 
 	@property
 	def is_resource(self):
 		return self.name.endswith(".resource")
 
-	def load(self, buf):
+	def load(self):
 		if self.is_resource:
 			self.loaded = True
 			return
+
+		buf = self._buf
+		buf.seek(self._buf_ofs)
 
 		self.metadata_size = buf.read_uint()
 		self.file_size = buf.read_uint()

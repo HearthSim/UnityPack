@@ -46,14 +46,14 @@ class UnityExtract:
 			if self.args.as_asset or file.endswith(".assets"):
 				with open(file, "rb") as f:
 					asset = Asset.from_file(f)
-				self.handle_asset(asset)
+					self.handle_asset(asset)
 				continue
 
 			with open(file, "rb") as f:
 				bundle = unitypack.load(f)
 
-			for asset in bundle.assets:
-				self.handle_asset(asset)
+				for asset in bundle.assets:
+					self.handle_asset(asset)
 
 		return 0
 

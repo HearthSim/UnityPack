@@ -80,5 +80,5 @@ class StreamedResource(Object):
 		if not self.asset:
 			logging.warning("No data available for StreamedResource")
 			return b""
-		self.asset.data.seek(self.offset)
-		return self.asset.data.read(self.size)
+		self.asset._buf.seek(self.asset._buf_ofs + self.offset)
+		return self.asset._buf.read(self.size)

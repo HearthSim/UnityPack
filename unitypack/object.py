@@ -69,8 +69,8 @@ class ObjectInfo:
 			return self.asset.read_id(buf)
 
 	def read(self):
-		buf = BinaryReader(self.asset.data)
-		buf.seek(self.data_offset)
+		buf = self.asset._buf
+		buf.seek(self.asset._buf_ofs + self.data_offset)
 		return self.read_value(self.type_tree, buf)
 
 	def read_value(self, type, buf):

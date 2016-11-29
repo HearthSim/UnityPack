@@ -30,15 +30,15 @@ class UnityEnvironment:
 			for filename in os.listdir(dirname):
 				basename = os.path.splitext(os.path.basename(filename))[0]
 				if name.lower() == "cab-" + basename.lower():
-					with open(os.path.join(dirname, filename), "rb") as f:
-						return self.load(f)
+					f = open(os.path.join(dirname, filename), "rb")
+					self.load(f)
 
 	def get_asset_by_filename(self, name):
 		if name not in self.assets:
 			path = os.path.join(self.base_path, name)
 			if os.path.exists(path):
-				with open(path, "rb") as f:
-					self.assets[name] = Asset.from_file(f)
+				f = open(path, "rb")
+				self.assets[name] = Asset.from_file(f)
 			else:
 				self.discover(name)
 				self.populate_assets()
