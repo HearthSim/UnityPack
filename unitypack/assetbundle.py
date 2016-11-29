@@ -1,3 +1,5 @@
+import lzma
+import struct
 from io import BytesIO
 from .asset import Asset
 from .enums import CompressionType
@@ -96,9 +98,9 @@ class AssetBundle:
 		num_blocks = blk.read_int()
 		blocks = []
 		for i in range(num_blocks):
-			bcsize, busize = blk.read_int(), blk.read_int()
+			busize, bcsize = blk.read_int(), blk.read_int()
 			bflags = blk.read_int16()
-			blocks.append((bcsize, busize, bflags))
+			blocks.append(ArchiveBlockInfo(busize, bcsize, bflags))
 
 		num_nodes = blk.read_int()
 		nodes = []
@@ -109,12 +111,125 @@ class AssetBundle:
 			name = blk.read_string()
 			nodes.append((ofs, size, status, name))
 
-		basepos = buf.tell()
+		storage = ArchiveBlockStorage(blocks, buf)
 		for ofs, size, status, name in nodes:
-			buf.seek(basepos + ofs)
-			asset = Asset.from_bundle(self, buf)
+			storage.seek(ofs)
+			asset = Asset.from_bundle(self, storage)
 			asset.name = name
 			self.assets.append(asset)
 
 		# Hacky
 		self.name = self.assets[0].name
+
+
+class ArchiveBlockInfo:
+	def __init__(self, usize, csize, flags):
+		self.uncompressed_size = usize
+		self.compressed_size = csize
+		self.flags = flags
+
+	def __repr__(self):
+		return "<%s: %d %d %r %r>" % (
+			self.__class__.__name__,
+			self.uncompressed_size, self.compressed_size,
+			self.compressed, self.compression_type
+		)
+
+	@property
+	def compressed(self):
+		return self.compression_type != CompressionType.NONE
+
+	@property
+	def compression_type(self):
+		return CompressionType(self.flags & 0x3f)
+
+	def decompress(self, buf):
+		if not self.compressed:
+			return buf
+		ty = self.compression_type
+		if ty == CompressionType.LZMA:
+			props, dict_size = struct.unpack("<BI", buf.read(5))
+			lc = props % 9
+			props = int(props / 9)
+			pb = int(props / 5)
+			lp = props % 5
+			dec = lzma.LZMADecompressor(format=lzma.FORMAT_RAW, filters=[{
+				"id": lzma.FILTER_LZMA1,
+				"dict_size": dict_size,
+				"lc": lc,
+				"lp": lp,
+				"pb": pb,
+			}])
+			res = dec.decompress(buf.read())
+			return BytesIO(res)
+		if ty in (CompressionType.LZ4, CompressionType.LZ4HC):
+			res = lz4_decompress(buf.read(self.compressed_size), self.uncompressed_size)
+			return BytesIO(res)
+		raise NotImplementedError("Unimplemented compression method: %r" % (ty))
+
+
+class ArchiveBlockStorage:
+	def __init__(self, blocks, stream):
+		self.blocks = blocks
+		self.stream = stream
+		self.cursor = 0
+		self.basepos = stream.tell()
+		self.maxpos = sum([b.uncompressed_size for b in blocks])
+		self.sought = False
+		self.current_block = None
+		self.current_block_start = 0
+		self.current_stream = None
+		self._seek(0)
+
+	def read(self, size=-1):
+		buf = bytearray()
+		while size != 0 and self.cursor < self.maxpos:
+			if not self.in_current_block(self.cursor):
+				self.seek_to_block(self.cursor)
+			part = self.current_stream.read(size)
+			if size > 0:
+				if len(part) == 0:
+					raise EOFError()
+				size -= len(part)
+			self.cursor += len(part)
+			buf += part
+		return bytes(buf)
+
+	def seek(self, offset, whence=0):
+		new_cursor = 0
+		if whence == 1:
+			new_cursor = offset + self.cursor
+		elif whence == 2:
+			new_cursor = self.maxpos + offset
+		else:
+			new_cursor = offset
+		if self.cursor != new_cursor:
+			self._seek(new_cursor)
+
+	def tell(self):
+		return self.cursor
+
+	def _seek(self, new_cursor):
+		self.cursor = new_cursor
+		if not self.in_current_block(new_cursor):
+			self.seek_to_block(new_cursor)
+		self.current_stream.seek(new_cursor - self.current_block_start)
+
+	def in_current_block(self, pos):
+		if self.current_block is None:
+			return False
+		end = self.current_block_start + self.current_block.uncompressed_size
+		return self.current_block_start <= pos and pos < end
+
+	def seek_to_block(self, pos):
+		baseofs = 0
+		ofs = 0
+		for b in self.blocks:
+			if ofs + b.uncompressed_size > pos:
+				self.current_block = b
+				break
+			baseofs += b.compressed_size
+			ofs += b.uncompressed_size
+		self.stream.seek(self.basepos + baseofs)
+		buf = BytesIO(self.stream.read(self.current_block.compressed_size))
+		self.current_stream = self.current_block.decompress(buf)
