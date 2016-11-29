@@ -63,7 +63,7 @@ class Asset:
 		return self.environment.get_asset_by_filename(path)
 
 	def __init__(self):
-		self.objects = {}
+		self._objects = {}
 		self.adds = []
 		self.asset_refs = [self]
 		self.types = {}
@@ -72,15 +72,26 @@ class Asset:
 		self.name = ""
 		self.long_object_ids = False
 		self.tree = TypeMetadata(self)
+		self.loaded = False
 
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
+
+	@property
+	def objects(self):
+		if not self.loaded:
+			self.load(self.data)
+		return self._objects
 
 	@property
 	def is_resource(self):
 		return self.name.endswith(".resource")
 
 	def load(self, buf):
+		if self.is_resource:
+			self.loaded = True
+			return
+
 		self.metadata_size = buf.read_uint()
 		self.file_size = buf.read_uint()
 		self.format = buf.read_uint()
@@ -121,6 +132,7 @@ class Asset:
 
 		unk_string = buf.read_string()
 		assert not unk_string, repr(unk_string)
+		self.loaded = True
 
 	def read_id(self, buf):
 		if self.format >= 14:
@@ -139,10 +151,10 @@ class Asset:
 				logging.warning("%r absent from structs.dat", obj.class_id)
 				self.types[obj.type_id] = None
 
-		if obj.path_id in self.objects:
+		if obj.path_id in self._objects:
 			raise ValueError("Duplicate asset object: %r (path_id=%r)" % (obj, obj.path_id))
 
-		self.objects[obj.path_id] = obj
+		self._objects[obj.path_id] = obj
 
 	def pretty(self):
 		ret = []

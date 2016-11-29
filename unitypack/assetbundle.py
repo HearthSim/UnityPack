@@ -71,8 +71,6 @@ class AssetBundle:
 			num_assets = 1
 		for i in range(num_assets):
 			asset = Asset.from_bundle(self, buf)
-			if not asset.is_resource:
-				asset.load(asset.data)
 			self.assets.append(asset)
 
 	def read_compressed_data(self, buf, compression):
@@ -116,8 +114,6 @@ class AssetBundle:
 			buf.seek(basepos + ofs)
 			asset = Asset.from_bundle(self, buf)
 			asset.name = name
-			if not asset.is_resource:
-				asset.load(asset.data)
 			self.assets.append(asset)
 
 		# Hacky
