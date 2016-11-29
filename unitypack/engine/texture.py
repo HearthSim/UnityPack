@@ -125,7 +125,7 @@ class Texture2D(Texture):
 	texture_dimension = field("m_TextureDimension")
 	mipmap = field("m_MipMap")
 	complete_image_size = field("m_CompleteImageSize")
-	stream_data = field("m_StreamData")
+	stream_data = field("m_StreamData", default=False)
 
 	def __repr__(self):
 		return "<%s %s (%s %ix%i)>" % (
