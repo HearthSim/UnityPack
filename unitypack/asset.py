@@ -49,7 +49,7 @@ class Asset:
 		ret = cls()
 		ret.name = file.name
 		ret._buf_ofs = file.tell()
-		ret._buf = file
+		ret._buf = BinaryReader(file)
 		base_path = os.path.abspath(os.path.dirname(file.name))
 		if environment is None:
 			from .environment import UnityEnvironment
