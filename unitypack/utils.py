@@ -4,13 +4,11 @@ from os import SEEK_CUR
 
 def lz4_decompress(data, size):
 	try:
-		import lz4
+		from lz4.block import decompress
 	except ImportError:
-		raise RuntimeError("python-lz4 is required to read UnityFS files")
+		raise RuntimeError("python-lz4 >= 0.9 is required to read UnityFS files")
 
-	# https://github.com/python-lz4/python-lz4/issues/6
-	data = struct.pack("i", size) + data
-	return lz4.loads(data)
+	return decompress(data, size)
 
 
 def extract_audioclip_samples(d) -> dict:
