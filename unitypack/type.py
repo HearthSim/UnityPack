@@ -42,7 +42,7 @@ class TypeTree:
 		self.version = buf.read_int()
 		self.flags = buf.read_int()
 
-		num_fields = buf.read_int()
+		num_fields = buf.read_uint()
 		for i in range(num_fields):
 			tree = TypeTree(self.format)
 			tree.load(buf)
@@ -60,7 +60,7 @@ class TypeTree:
 
 		for i in range(num_nodes):
 			version = buf.read_int16()
-			depth = buf.read_byte()
+			depth = buf.read_ubyte()
 
 			if depth == 0:
 				curr = self
