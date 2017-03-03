@@ -29,7 +29,7 @@ To open an asset, or asset bundle, with unitypack:
 ```py
 import unitypack
 
-with open("example.unity3d") as f:
+with open("example.unity3d", "rb") as f:
 	bundle = unitypack.load(f)
 
 	for asset in bundle.assets:
