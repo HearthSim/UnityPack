@@ -82,8 +82,14 @@ class UnityExtract:
 			if obj.type not in self.handle_formats:
 				continue
 
+			def matches(name, filters):
+				for f in filters:
+					if f.lower() in name:
+						return True
+				return False
+
 			d = obj.read()
-			if self.args.filter and d.name not in self.args.filter:
+			if self.args.filter and not matches(d.name.lower(), self.args.filter):
 				continue
 
 			if obj.type == "AudioClip":
@@ -141,6 +147,7 @@ class UnityExtract:
 def main():
 	app = UnityExtract(sys.argv[1:])
 	exit(app.run())
+
 
 if __name__ == "__main__":
 	main()
