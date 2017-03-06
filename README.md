@@ -73,6 +73,7 @@ By default, it will extract all known extractable types:
   is required to convert them back.
 * `Texture2D` objects will be converted to png files. Not all Texture2D formats are supported.
   [Pillow](https://github.com/python-pillow/Pillow) version >= 3.4 is required for this.
+  [decrunch](https://github.com/HearthSim/decrunch) is required for DXT1Crunched / DXT5Crunched.
 * `Mesh` objects (3D objects) will be pickled. Pull requests implementing a .obj converter are
   welcome and wanted.
 * `TextAsset` objects will be extracted as plain text, to .txt files
