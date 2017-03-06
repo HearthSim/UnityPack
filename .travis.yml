@@ -1,0 +1,28 @@
+# https://travis-ci.org/HearthSim/UnityPack
+sudo: false
+language: python
+python:
+  - 3.4
+  - 3.6
+cache:
+  directories:
+    - $HOME/.pip-cache/
+    - $HOME/virtualenv/python3.4
+    - $HOME/virtualenv/python3.6
+install:
+  - pip install --upgrade pip
+script:
+  - python setup.py build
+notifications:
+  email:
+    on_failure: always
+    on_success: change
+  irc:
+    channels:
+      - "chat.freenode.net#hearthsim-commits"
+    use_notice: true
+    skip_join: true
+    on_failure: always
+    on_success: change
+    template:
+      - "(%{branch} @ %{commit} : %{author}): %{message} %{build_url}"

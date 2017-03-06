@@ -1,4 +1,5 @@
-# python-unitypack
+# UnityPack
+[![Build Status](https://api.travis-ci.org/HearthSim/UnityPack.svg?branch=master)](https://travis-ci.org/HearthSim/UnityPack)
 
 A library to deserialize Unity3D Assets and AssetBundles files (*.unity3d).
 
