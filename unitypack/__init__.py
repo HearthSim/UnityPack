@@ -1,4 +1,7 @@
-__version__ = "0.7.0"
+import pkg_resources
+
+
+__version__ = pkg_resources.require("unitypack")[0].version
 
 
 def load(file, env=None):
