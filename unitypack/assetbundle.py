@@ -230,6 +230,11 @@ class ArchiveBlockStorage:
 				break
 			baseofs += b.compressed_size
 			ofs += b.uncompressed_size
+		else:
+			self.current_block = None
+			self.current_stream = BytesIO(b"")
+			return
+
 		self.stream.seek(self.basepos + baseofs)
 		buf = BytesIO(self.stream.read(self.current_block.compressed_size))
 		self.current_stream = self.current_block.decompress(buf)
