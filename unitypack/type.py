@@ -102,6 +102,7 @@ class TypeMetadata:
 		return cls.default_instance
 
 	def __init__(self, asset):
+		self.class_ids = []
 		self.type_trees = {}
 		self.hashes = {}
 		self.asset = asset
@@ -120,6 +121,16 @@ class TypeMetadata:
 
 			for i in range(num_types):
 				class_id = buf.read_int()
+				if format >= 17:
+					unk0 = buf.read_byte()
+					unk1 = buf.read_int16()
+					if class_id == 114:
+						if unk1 >= 0:
+							# wake me up inside
+							class_id = -2 - unk1
+						else:
+							class_id = -1
+				self.class_ids.append(class_id)
 				if class_id < 0:
 					hash = buf.read(0x20)
 				else:
