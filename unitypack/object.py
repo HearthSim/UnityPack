@@ -82,6 +82,8 @@ class ObjectInfo:
 
 	def read_value(self, type, buf):
 		align = False
+		expected_size = type.size
+		pos_before = buf.tell()
 		t = type.type
 		first_child = type.children[0] if type.children else TypeTree(self.asset.format)
 		if t == "bool":
@@ -147,6 +149,13 @@ class ObjectInfo:
 					else:
 						logging.warning("StreamedResource not available without bundle")
 						result.asset = None
+
+		# Check to make sure we read at least as many bytes the tree says.
+		# We allow reading more for the case of alignment.
+		pos_after = buf.tell()
+		actual_size = pos_after - pos_before
+		if expected_size > 0 and actual_size < expected_size:
+			raise ValueError("Expected read_value(%r) to read %r bytes, but only read %r bytes" % (type, expected_size, actual_size))
 
 		if align or type.post_align:
 			buf.align()
