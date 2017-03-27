@@ -51,16 +51,21 @@ class ObjectInfo:
 		self.path_id = self.read_id(buf)
 		self.data_offset = buf.read_uint() + self.asset.data_offset
 		self.size = buf.read_uint()
-		self.type_id = buf.read_int()
-		self.class_id = buf.read_int16()
-
+		if self.asset.format < 17:
+			self.type_id = buf.read_int()
+			self.class_id = buf.read_int16()
+		else:
+			type_id = buf.read_int()
+			class_id = self.asset.tree.class_ids[type_id]
+			self.type_id = class_id
+			self.class_id = class_id
 		if self.asset.format <= 10:
 			self.is_destroyed = bool(buf.read_int16())
-		elif self.asset.format >= 11:
+		if self.asset.format >= 11 and self.asset.format <= 16:
 			self.unk0 = buf.read_int16()
 
-			if self.asset.format >= 15:
-				self.unk1 = buf.read_byte()
+		if self.asset.format >= 15 and self.asset.format <= 16:
+			self.unk1 = buf.read_byte()
 
 	def read_id(self, buf):
 		if self.asset.long_object_ids:

@@ -102,6 +102,7 @@ class TypeMetadata:
 		return cls.default_instance
 
 	def __init__(self, asset):
+		self.class_ids = []
 		self.type_trees = {}
 		self.hashes = {}
 		self.asset = asset
@@ -120,6 +121,19 @@ class TypeMetadata:
 
 			for i in range(num_types):
 				class_id = buf.read_int()
+				if format >= 17:
+					unk0 = buf.read_byte()
+					script_id = buf.read_int16()
+					if class_id == 114:
+						if script_id >= 0:
+							# make up a fake negative class_id to work like the
+							# old system.  class_id of -1 is taken to mean that
+							# the MonoBehaviour base class was serialized; that
+							# shouldn't happen, but it's easy to account for.
+							class_id = -2 - script_id
+						else:
+							class_id = -1
+				self.class_ids.append(class_id)
 				if class_id < 0:
 					hash = buf.read(0x20)
 				else:
