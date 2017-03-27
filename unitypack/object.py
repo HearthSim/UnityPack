@@ -1,4 +1,5 @@
 import logging
+from io import BytesIO
 from . import engine as UnityEngine
 from .resources import UnityClass
 from .type import TypeMetadata, TypeTree
@@ -76,7 +77,8 @@ class ObjectInfo:
 	def read(self):
 		buf = self.asset._buf
 		buf.seek(self.asset._buf_ofs + self.data_offset)
-		return self.read_value(self.type_tree, buf)
+		object_buf = buf.read(self.size)
+		return self.read_value(self.type_tree, BinaryReader(BytesIO(object_buf)))
 
 	def read_value(self, type, buf):
 		align = False
@@ -84,8 +86,10 @@ class ObjectInfo:
 		first_child = type.children[0] if type.children else TypeTree(self.asset.format)
 		if t == "bool":
 			result = buf.read_boolean()
-		elif t == "UInt8":
+		elif t == "SInt8":
 			result = buf.read_byte()
+		elif t == "UInt8":
+			result = buf.read_ubyte()
 		elif t == "SInt16":
 			result = buf.read_int16()
 		elif t == "UInt16":
