@@ -94,6 +94,7 @@ class Asset:
 
 		buf = self._buf
 		buf.seek(self._buf_ofs)
+		buf.endian = ">"
 
 		self.metadata_size = buf.read_uint()
 		self.file_size = buf.read_uint()
