@@ -139,13 +139,10 @@ class Texture2D(Texture):
 
 	@property
 	def image_data(self):
-		if self.stream_data:
-			path = self.stream_data.get("path")
-			if path:
-				offset = self.stream_data["offset"]
-				size = self.stream_data["size"]
-				return self.asset.environment.get_stream(path, offset, size)
-
+		if self.stream_data and self.stream_data.asset:
+			if not hasattr(self, "_data"):
+				self._data = self.stream_data.get_data()
+			return self._data
 		return self.data
 
 	@property
@@ -180,3 +177,16 @@ class Texture2D(Texture):
 			return None
 
 		return Image.frombytes(mode, size, data, codec, args)
+
+
+class StreamingInfo(Object):
+	offset = field("offset")
+	size = field("size")
+	path = field("path")
+
+	def get_data(self):
+		if not self.asset:
+			logging.warning("No data available for StreamingInfo")
+			return b""
+		self.asset._buf.seek(self.asset._buf_ofs + self.offset)
+		return self.asset._buf.read(self.size)
