@@ -144,11 +144,9 @@ class ObjectInfo:
 
 				result = load_object(type, result)
 				if t == "StreamedResource":
-					if self.asset.bundle and self.asset.bundle.environment:
-						result.asset = self.asset.get_asset(result.source)
-					else:
-						logging.warning("StreamedResource not available without bundle")
-						result.asset = None
+					result.asset = self.resolve_streaming_asset(result.source)
+				elif t == "StreamingInfo":
+					result.asset = self.resolve_streaming_asset(result.path)
 
 		# Check to make sure we read at least as many bytes the tree says.
 		# We allow reading more for the case of alignment.
@@ -161,6 +159,10 @@ class ObjectInfo:
 			buf.align()
 
 		return result
+
+	def resolve_streaming_asset(self, path):
+		if len(path) > 0:
+			return self.asset.get_asset(path)
 
 
 class ObjectPointer:
