@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 from io import BytesIO
 from . import engine as UnityEngine
 from .resources import UnityClass
@@ -137,7 +138,7 @@ class ObjectInfo:
 				second = self.read_value(type.children[1], buf)
 				result = (first, second)
 			else:
-				result = {}
+				result = OrderedDict()
 
 				for child in type.children:
 					result[child.name] = self.read_value(child, buf)
