@@ -9,6 +9,11 @@ class UnityEnvironment:
 		self.bundles = {}
 		self.assets = {}
 		self.base_path = base_path
+		self.files = []
+
+	def __del__(self):
+		for f in self.files:
+			f.close()
 
 	def __repr__(self):
 		return "%s(base_path=%r)" % (self.__class__.__name__, self.base_path)
@@ -31,6 +36,7 @@ class UnityEnvironment:
 				basename = os.path.splitext(os.path.basename(filename))[0]
 				if name.lower() == "cab-" + basename.lower():
 					f = open(os.path.join(dirname, filename), "rb")
+					self.files.append(f)
 					self.load(f)
 
 	def get_asset_by_filename(self, name):
@@ -38,6 +44,7 @@ class UnityEnvironment:
 			path = os.path.join(self.base_path, name)
 			if os.path.exists(path):
 				f = open(path, "rb")
+				self.files.append(f)
 				self.assets[name] = Asset.from_file(f)
 			else:
 				self.discover(name)
