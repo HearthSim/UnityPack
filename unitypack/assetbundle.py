@@ -91,7 +91,13 @@ class AssetBundle:
 		self.uiblock_size = buf.read_uint()
 		flags = buf.read_uint()
 		compression = CompressionType(flags & 0x3F)
+		eof_metadata = flags & 0x80
+		if eof_metadata:
+			orig_pos = buf.tell()
+			buf.seek(-self.ciblock_size, 2)
 		data = self.read_compressed_data(buf, compression)
+		if eof_metadata:
+			buf.seek(orig_pos)
 
 		blk = BinaryReader(BytesIO(data), endian=">")
 		self.guid = blk.read(16)
