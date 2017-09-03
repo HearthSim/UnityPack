@@ -2,6 +2,7 @@
 import os
 import pickle
 import sys
+import traceback
 import unitypack
 from argparse import ArgumentParser
 from io import BytesIO
@@ -79,69 +80,76 @@ class UnityExtract:
 
 	def handle_asset(self, asset):
 		for id, obj in asset.objects.items():
-			if obj.type not in self.handle_formats:
-				continue
+			try:
+				self.handle_object(id, obj)
+			except:
+				print("error:", sys.exc_info()[0])
+				print(traceback.format_exc())
 
-			def matches(name, filters):
-				for f in filters:
-					if f.lower() in name:
-						return True
-				return False
+	def handle_object(self, id, obj):
+		if obj.type not in self.handle_formats:
+				return
 
-			d = obj.read()
-			if self.args.filter and not matches(d.name.lower(), self.args.filter):
-				continue
+		def matches(name, filters):
+			for f in filters:
+				if f.lower() in name:
+					return True
+			return False
 
-			if obj.type == "AudioClip":
-				samples = extract_audioclip_samples(d)
-				for filename, sample in samples.items():
-					self.write_to_file(filename, sample, mode="wb")
+		d = obj.read()
+		if self.args.filter and not matches(d.name.lower(), self.args.filter):
+			return
 
-			elif obj.type == "MovieTexture":
-				filename = d.name + ".ogv"
-				self.write_to_file(filename, d.movie_data, mode="wb")
+		if obj.type == "AudioClip":
+			samples = extract_audioclip_samples(d)
+			for filename, sample in samples.items():
+				self.write_to_file(filename, sample, mode="wb")
 
-			elif obj.type == "Shader":
-				self.write_to_file(d.name + ".cg", d.script)
+		elif obj.type == "MovieTexture":
+			filename = d.name + ".ogv"
+			self.write_to_file(filename, d.movie_data, mode="wb")
 
-			elif obj.type == "Mesh":
-				try:
-					mesh_data = OBJMesh(d).export()
-					self.write_to_file(d.name + ".obj", mesh_data, mode="w")
-				except NotImplementedError as e:
-					print("WARNING: Could not extract %r (%s)" % (d, e))
-					mesh_data = pickle.dumps(d._obj)
-					self.write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
+		elif obj.type == "Shader":
+			self.write_to_file(d.name + ".cg", d.script)
 
-			elif obj.type == "Font":
-				self.write_to_file(d.name + ".ttf", d.data, mode="wb")
+		elif obj.type == "Mesh":
+			try:
+				mesh_data = OBJMesh(d).export()
+				self.write_to_file(d.name + ".obj", mesh_data, mode="w")
+			except NotImplementedError as e:
+				print("WARNING: Could not extract %r (%s)" % (d, e))
+				mesh_data = pickle.dumps(d._obj)
+				self.write_to_file(d.name + ".Mesh.pickle", mesh_data, mode="wb")
 
-			elif obj.type == "TextAsset":
-				if isinstance(d.script, bytes):
-					filename, mode = d.name + ".bin", "wb"
-				else:
-					filename, mode = d.name + ".txt", "w"
-				self.write_to_file(filename, d.script, mode=mode)
+		elif obj.type == "Font":
+			self.write_to_file(d.name + ".ttf", d.data, mode="wb")
 
-			elif obj.type == "Texture2D":
-				filename = d.name + ".png"
-				try:
-					from PIL import ImageOps
-				except ImportError:
-					print("WARNING: Pillow not available. Skipping %r." % (filename))
-					continue
-				image = d.image
-				if image is None:
-					print("WARNING: %s is an empty image" % (filename))
-					continue
+		elif obj.type == "TextAsset":
+			if isinstance(d.script, bytes):
+				filename, mode = d.name + ".bin", "wb"
+			else:
+				filename, mode = d.name + ".txt", "w"
+			self.write_to_file(filename, d.script, mode=mode)
 
-				print("Decoding %r" % (d))
-				# Texture2D objects are flipped
-				img = ImageOps.flip(image)
-				# PIL has no method to write to a string :/
-				output = BytesIO()
-				img.save(output, format="png")
-				self.write_to_file(filename, output.getvalue(), mode="wb")
+		elif obj.type == "Texture2D":
+			filename = d.name + ".png"
+			try:
+				from PIL import ImageOps
+			except ImportError:
+				print("WARNING: Pillow not available. Skipping %r." % (filename))
+				return
+			image = d.image
+			if image is None:
+				print("WARNING: %s is an empty image" % (filename))
+				return
+
+			print("Decoding %r" % (d))
+			# Texture2D objects are flipped
+			img = ImageOps.flip(image)
+			# PIL has no method to write to a string :/
+			output = BytesIO()
+			img.save(output, format="png")
+			self.write_to_file(filename, output.getvalue(), mode="wb")
 
 
 def main():
