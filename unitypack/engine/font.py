@@ -4,7 +4,7 @@ from .object import field, Object
 class Font(Object):
 	data = field("m_FontData")
 	ascent = field("m_Ascent", float)
-	character_padding = field("m_CharacterSpacing")
+	character_padding = field("m_CharacterPadding")
 	character_spacing = field("m_CharacterSpacing")
 	font_size = field("m_FontSize", float)
 	kerning = field("m_Kerning", float)
