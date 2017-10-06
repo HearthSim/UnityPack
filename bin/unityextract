@@ -130,7 +130,12 @@ class UnityExtract:
 				except ImportError:
 					print("WARNING: Pillow not available. Skipping %r." % (filename))
 					continue
-				image = d.image
+				try:
+					image = d.image
+				except NotImplementedError:
+					print("WARNING: Texture format not implemented. Skipping %r." % (filename))
+					continue
+
 				if image is None:
 					print("WARNING: %s is an empty image" % (filename))
 					continue
