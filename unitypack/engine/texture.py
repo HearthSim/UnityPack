@@ -110,7 +110,10 @@ class Material(Object):
 	def saved_properties(self):
 		def _unpack_prop(value):
 			for vk, vv in value:
-				yield vk["name"], vv
+				if isinstance(vk, str):  # Unity 5.6+
+					yield vk, vv
+				else:  # Unity <= 5.4
+					yield vk["name"], vv
 		return {k: dict(_unpack_prop(v)) for k, v in self._obj["m_SavedProperties"].items()}
 
 
