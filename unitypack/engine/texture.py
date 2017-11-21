@@ -2,6 +2,8 @@ from enum import IntEnum
 from .object import Object, field
 
 
+from .ETC2ImagePlugin import ETC2Decoder
+
 class TextureFormat(IntEnum):
 	Alpha8 = 1
 	ARGB4444 = 2
@@ -73,6 +75,10 @@ class TextureFormat(IntEnum):
 			return "RGBA;4B"
 		elif self == TextureFormat.ARGB4444:
 			return "RGBA;4B"
+		elif self == TextureFormat.ETC_RGB4:
+			return "RGB"
+		elif self == TextureFormat.ETC2_RGB:
+			return "RGB"
 		return "RGBA"
 
 
@@ -88,6 +94,10 @@ IMPLEMENTED_FORMATS = (
 	TextureFormat.DXT1Crunched,
 	TextureFormat.DXT5,
 	TextureFormat.DXT5Crunched,
+	TextureFormat.ETC_RGB4,
+	TextureFormat.ETC2_RGB,
+	TextureFormat.ETC2_RGBA1,
+	TextureFormat.ETC2_RGBA8,
 )
 
 
@@ -162,6 +172,9 @@ class Texture2D(Texture):
 		elif self.format in (TextureFormat.DXT5, TextureFormat.DXT5Crunched):
 			codec = "bcn"
 			args = (3, )
+		elif self.format in (TextureFormat.ETC_RGB4, TextureFormat.ETC2_RGB, TextureFormat.ETC2_RGBA1, TextureFormat.ETC2_RGBA8):
+			codec = "etc2"
+			args = (self.format, self.format.pixel_format, )
 		else:
 			codec = "raw"
 			args = (self.format.pixel_format, )
