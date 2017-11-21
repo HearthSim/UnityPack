@@ -33,6 +33,12 @@ class AssetBundle:
 		buf = BinaryReader(file, endian=">")
 		self.path = file.name
 
+		# Verify that the format starts with b"Unity"
+		position = buf.tell()
+		if buf.read(5) != b"Unity":
+			raise NotImplementedError("File does not start with b'Unity': %r" % self.path)
+		buf.seek(position)
+
 		self.signature = buf.read_string()
 		self.format_version = buf.read_int()
 		self.unity_version = buf.read_string()
@@ -40,9 +46,10 @@ class AssetBundle:
 
 		if self.is_unityfs:
 			self.load_unityfs(buf)
-		else:
-			assert self.signature in (SIGNATURE_RAW, SIGNATURE_WEB), self.signature
+		elif self.signature in (SIGNATURE_RAW, SIGNATURE_WEB):
 			self.load_raw(buf)
+		else:
+			raise NotImplementedError("Unrecognized file signature %r in %r" % (self.signature, self.path))
 
 	def load_raw(self, buf):
 		self.file_size = buf.read_uint()
