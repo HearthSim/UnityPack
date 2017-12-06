@@ -17,6 +17,9 @@ class TextureFormat(IntEnum):
 	RGBA4444 = 13
 	BGRA32 = 14
 
+	BC6H = 24
+	BC7 = 25
+
 	DXT1Crunched = 28
 	DXT5Crunched = 29
 
@@ -88,6 +91,7 @@ IMPLEMENTED_FORMATS = (
 	TextureFormat.DXT1Crunched,
 	TextureFormat.DXT5,
 	TextureFormat.DXT5Crunched,
+	TextureFormat.BC7,
 )
 
 
@@ -162,6 +166,9 @@ class Texture2D(Texture):
 		elif self.format in (TextureFormat.DXT5, TextureFormat.DXT5Crunched):
 			codec = "bcn"
 			args = (3, )
+		elif self.format == TextureFormat.BC7:
+			codec = "bcn"
+			args = (7, )
 		else:
 			codec = "raw"
 			args = (self.format.pixel_format, )
