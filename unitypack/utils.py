@@ -107,5 +107,8 @@ class BinaryReader:
 	def read_float(self) -> float:
 		return struct.unpack(self.endian + "f", self.read(4))[0]
 
+	def read_double(self) -> float:
+		return struct.unpack(self.endian + "d", self.read(8))[0]
+
 	def read_int64(self) -> int:
 		return struct.unpack(self.endian + "q", self.read(8))[0]

@@ -110,6 +110,9 @@ class ObjectInfo:
 		elif t == "float":
 			buf.align()
 			result = buf.read_float()
+		elif t == "double":
+			buf.align()
+			result = buf.read_double()
 		elif t == "string":
 			size = buf.read_uint()
 			result = buf.read_string(size)
