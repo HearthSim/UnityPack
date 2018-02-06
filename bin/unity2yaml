@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import os
 import sys
-import unitypack
-import yaml
 from argparse import ArgumentParser
+
+import yaml
+
+import unitypack
 from unitypack.asset import Asset
 from unitypack.object import ObjectPointer
 

@@ -1,6 +1,7 @@
 from io import BytesIO
+
 from .enums import RuntimePlatform
-from .resources import get_resource, STRINGS_DAT
+from .resources import STRINGS_DAT, get_resource
 from .utils import BinaryReader
 
 

@@ -1,9 +1,10 @@
-import os
 import logging
 import lzma
+import os
 from binascii import hexlify
 from io import BytesIO
 from uuid import UUID
+
 from .object import ObjectInfo
 from .type import TypeMetadata
 from .utils import BinaryReader

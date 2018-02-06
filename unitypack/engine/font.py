@@ -1,4 +1,4 @@
-from .object import field, Object
+from .object import Object, field
 
 
 class Font(Object):

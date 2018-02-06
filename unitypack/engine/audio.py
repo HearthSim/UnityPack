@@ -1,5 +1,6 @@
 import logging
 from enum import IntEnum
+
 from .component import Behaviour
 from .object import Object, field
 

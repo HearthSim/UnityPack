@@ -1,6 +1,6 @@
-import logging
 from collections import OrderedDict
 from io import BytesIO
+
 from . import engine as UnityEngine
 from .resources import UnityClass
 from .type import TypeMetadata, TypeTree

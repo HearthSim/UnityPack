@@ -1,6 +1,7 @@
 import lzma
 import struct
 from io import BytesIO
+
 from .asset import Asset
 from .enums import CompressionType
 from .utils import BinaryReader, lz4_decompress

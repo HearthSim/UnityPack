@@ -1,4 +1,5 @@
 from enum import IntEnum
+
 from .component import Component
 from .object import Object, field
 

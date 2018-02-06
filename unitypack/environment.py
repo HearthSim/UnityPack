@@ -1,5 +1,6 @@
 import os
 from urllib.parse import urlparse
+
 from .asset import Asset
 from .assetbundle import AssetBundle
 

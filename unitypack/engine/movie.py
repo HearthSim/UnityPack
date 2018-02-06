@@ -1,6 +1,5 @@
-from enum import IntEnum
-from .texture import Texture
 from .object import field
+from .texture import Texture
 
 
 class MovieTexture(Texture):
