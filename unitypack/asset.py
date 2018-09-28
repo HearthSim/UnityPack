@@ -1,7 +1,7 @@
 import logging
 import lzma
 import os
-from binascii import hexlify
+from binascii import hexlify, crc32
 from io import BytesIO
 from uuid import UUID
 
@@ -36,6 +36,7 @@ class Asset:
 			dec = lzma.LZMADecompressor()
 			data = dec.decompress(buf.read())
 			ret._buf = BinaryReader(BytesIO(data[header_size:]), endian=">")
+			ret.crc32 = crc32(data[header_size:])
 			ret._buf_ofs = 0
 			buf.seek(ofs)
 		else:
@@ -74,6 +75,7 @@ class Asset:
 		self.long_object_ids = False
 		self.tree = TypeMetadata(self)
 		self.loaded = False
+		self.crc32 = None
 
 	def __repr__(self):
 		return "<%s %s>" % (self.__class__.__name__, self.name)
