@@ -121,7 +121,7 @@ class MeshData:
                         elif j == 4:
                             self.uv2.append(OBJVector2().read(buf))
                         elif j == 5:
-                            if channel_count == v5_channel_count:
+                            if channel_count == v5_channel_count || channel_count == v2018_channel_count:
                                 self.uv3.append(OBJVector2().read(buf))
                             else:
                                 self.tangents.append(OBJVector4().read(buf))
