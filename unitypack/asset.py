@@ -86,7 +86,7 @@ class Asset:
 
 	@property
 	def is_resource(self):
-		return self.name.endswith(".resource")
+		return self.name.endswith(".resource") or self.name.endswith(".resS")
 
 	def load(self):
 		if self.is_resource:
