@@ -64,6 +64,23 @@ class TextureFormat(IntEnum):
 	ASTC_RGBA_10x10 = 58
 	ASTC_RGBA_12x12 = 59
 
+	# Nintendo 3DS-flavoured ETC
+	ETC_RGB4_3DS = 60
+	ETC_RGBA8_3DS = 61
+
+	# ETC crunched texture
+	ETC_RGB4Crunched = 64
+	ETC2_RGBA8Crunched = 65
+
+	# ASTC compressed HDR RGB(A)
+	ASTC_HDR_4x4 = 66
+	ASTC_HDR_5x5 = 67
+	ASTC_HDR_6x6 = 68
+	ASTC_HDR_8x8 = 69
+	ASTC_HDR_10x10 = 70
+	ASTC_HDR_12x12 = 71
+
+
 	@property
 	def pixel_format(self):
 		if self == TextureFormat.RGB24:
