@@ -22,6 +22,11 @@ def extract_audioclip_samples(d) -> dict:
 		# eg. StreamedResource not available
 		return {}
 
+	if not d.data.startswith(b'FSB5'):
+		print("WARNING: %r does not seem to be an FSB file, extracting raw data" % (d,))
+		filename = "%s.raw" % (d.name,)
+		return { filename: d.data }
+
 	try:
 		from fsb5 import FSB5
 	except ImportError as e:
