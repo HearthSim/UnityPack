@@ -52,7 +52,7 @@ class TypeTree:
 	def load_blob(self, buf):
 		num_nodes = buf.read_uint()
 		self.buffer_bytes = buf.read_uint()
-		node_data = BytesIO(buf.read(24 * num_nodes))
+		node_data = BytesIO(buf.read(32 * num_nodes))
 		self.data = buf.read(self.buffer_bytes)
 
 		parents = [self]
@@ -79,6 +79,7 @@ class TypeTree:
 			curr.size = buf.read_int()
 			curr.index = buf.read_uint()
 			curr.flags = buf.read_int()
+			unk1 = buf.read_int64() # zero bytes?
 
 	def get_string(self, offset):
 		if offset < 0:
