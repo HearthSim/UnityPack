@@ -4,7 +4,9 @@ from io import BytesIO
 
 from .asset import Asset
 from .enums import CompressionType
-from .utils import BinaryReader, lz4_decompress
+from .utils import BinaryReader, OffsetReader, lz4_decompress
+
+from collections import namedtuple
 
 
 SIGNATURE_RAW = "UnityRaw"
@@ -13,6 +15,8 @@ SIGNATURE_FS = "UnityFS"
 
 
 class AssetBundle:
+	ChunkInfo = namedtuple('ChunkInfo', ['compressed_size', 'decompressed_size'])
+
 	def __init__(self, environment):
 		self.environment = environment
 		self.assets = []
@@ -51,35 +55,56 @@ class AssetBundle:
 			raise NotImplementedError("Unrecognized file signature %r in %r" % (self.signature, self.path))
 
 	def load_raw(self, buf):
+		# Bundle File metadata:
+
 		self.file_size = buf.read_uint()
 		self.header_size = buf.read_int()
 
-		self.file_count = buf.read_int()
-		self.bundle_count = buf.read_int()
+		self.total_chunk_count = buf.read_int()
+		num_chunk_infos = buf.read_int()
+
+		chunk_info = []
+		for _ in range(num_chunk_infos):
+			compressed = buf.read_uint()
+			decompressed = buf.read_uint()
+			chunk_info.append(self.ChunkInfo(compressed, decompressed))
+		self.chunk_info = chunk_info
 
 		if self.format_version >= 2:
-			self.bundle_size = buf.read_uint()  # without header_size
-
-			if self.format_version >= 3:
-				self.uncompressed_bundle_size = buf.read_uint()  # without header_size
-
-		if self.header_size >= 60:
-			self.compressed_file_size = buf.read_uint()  # with header_size
-			self.asset_header_size = buf.read_uint()
-
-		buf.read_int()
-		buf.read_byte()
-		self.name = buf.read_string()
-
-		# Preload assets
-		buf.seek(self.header_size)
-		if not self.compressed:
-			num_assets = buf.read_int()
+			self.bundle_size = buf.read_uint()
 		else:
-			num_assets = 1
-		for i in range(num_assets):
-			asset = Asset.from_bundle(self, buf)
-			self.assets.append(asset)
+			self.bundle_size = self.file_size
+
+		if self.format_version >= 3:
+			# Size of uncompressed bundle metadata header
+			self.metadata_header_size = buf.read_uint()
+		else:
+			self.metadata_header_size = None
+
+		_padding = buf.read_byte()
+		assert buf.tell() == self.header_size
+
+		# Packaged Bundle metadata:
+		databuf = OffsetReader(buf.buf, endian=">")
+
+		if self.compressed:
+			databuf = BinaryReader(lzma.LZMAFile(filename=databuf), endian=">")
+		self._databuf = databuf
+
+		num_assets = databuf.read_int()
+		assets = []
+		for _ in range(num_assets):
+			name = databuf.read_string()
+			offset = databuf.read_uint()
+			size = databuf.read_uint()
+			assets.append((name, offset, size))
+
+		for asset in assets:
+			self.assets.append(Asset.from_bundle(self, databuf, *asset))
+
+		if not self.metadata_header_size:
+			# NB: This won't include any padding.
+			self.metadata_header_size = databuf.tell()
 
 	def read_compressed_data(self, buf, compression):
 		data = buf.read(self.ciblock_size)
@@ -126,7 +151,7 @@ class AssetBundle:
 		storage = ArchiveBlockStorage(blocks, buf)
 		for ofs, size, status, name in nodes:
 			storage.seek(ofs)
-			asset = Asset.from_bundle(self, storage)
+			asset = Asset.from_bundle(self, BinaryReader(storage, endian=">"))
 			asset.name = name
 			self.assets.append(asset)
 

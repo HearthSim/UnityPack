@@ -12,36 +12,15 @@ from .utils import BinaryReader
 
 class Asset:
 	@classmethod
-	def from_bundle(cls, bundle, buf):
+	def from_bundle(cls, bundle, buf, name=None, offset=None, size=None):
 		ret = cls()
 		ret.bundle = bundle
 		ret.environment = bundle.environment
-		offset = buf.tell()
-		ret._buf = BinaryReader(buf, endian=">")
 
-		if bundle.is_unityfs:
-			ret._buf_ofs = buf.tell()
-			return ret
-
-		if not bundle.compressed:
-			ret.name = buf.read_string()
-			header_size = buf.read_uint()
-			buf.read_uint()  # size
-		else:
-			header_size = bundle.asset_header_size
-
-		# FIXME: this offset needs to be explored more
-		ofs = buf.tell()
-		if bundle.compressed:
-			dec = lzma.LZMADecompressor()
-			data = dec.decompress(buf.read())
-			ret._buf = BinaryReader(BytesIO(data[header_size:]), endian=">")
-			ret._buf_ofs = 0
-			buf.seek(ofs)
-		else:
-			ret._buf_ofs = offset + header_size - 4
-			if ret.is_resource:
-				ret._buf_ofs -= len(ret.name)
+		ret._buf = buf
+		ret.name = name
+		ret._buf_ofs = offset or buf.tell()
+		ret._size = size
 
 		return ret
 
