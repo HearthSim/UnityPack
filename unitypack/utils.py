@@ -57,6 +57,9 @@ class BinaryReader:
 	def read(self, *args):
 		return self.buf.read(*args)
 
+	def seekable(self):
+		return self.buf.seekable()
+
 	def seek(self, *args):
 		return self.buf.seek(*args)
 
