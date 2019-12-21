@@ -1,5 +1,7 @@
-import struct
+from binascii import crc32
+from io import DEFAULT_BUFFER_SIZE
 from os import SEEK_CUR
+import struct
 
 
 def lz4_decompress(data, size):
@@ -137,3 +139,28 @@ class OffsetReader(BinaryReader):
 
 	def tell(self):
 		return self.buf.tell() - self._offset
+
+
+def stream_crc32(f, size, crc=0):
+	"""
+	Compute the crc32 of data found within a stream, chunking the data
+	carefully to avoid excessive memory consumption while the checksum
+	is computed.
+
+	:param f: Source stream.
+	:param size: How many bytes to read from the stream.
+	:param crc: Prior CRC, if any. Defaults to 0.
+	:return: CRC32, as an integer returned by binascii.crc32().
+	"""
+	_crc = crc
+	while True:
+		if size <= 0:
+			break
+		chunksize = min(DEFAULT_BUFFER_SIZE, size)
+
+		data = f.read(chunksize)
+		if not data:
+			raise Exception("Unexpected EOF")
+		size = size - len(data)
+		_crc = crc32(data, _crc)
+	return _crc
