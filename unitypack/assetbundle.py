@@ -4,7 +4,7 @@ from io import BytesIO
 
 from .asset import Asset
 from .enums import CompressionType
-from .utils import BinaryReader, OffsetReader, lz4_decompress
+from .utils import BinaryReader, OffsetReader, lz4_decompress, cached_property, stream_crc32
 
 from collections import namedtuple
 
@@ -105,6 +105,24 @@ class AssetBundle:
 		if not self.metadata_header_size:
 			# NB: This won't include any padding.
 			self.metadata_header_size = databuf.tell()
+
+	@cached_property
+	def header_crc(self):
+		self._databuf.seek(0)
+		return stream_crc32(self._databuf, self.metadata_header_size)
+
+	@cached_property
+	def headered_crc(self):
+		self._databuf.seek(0)
+		uncompressed_total = sum([c.decompressed_size for c in self.chunk_info])
+		return stream_crc32(self._databuf, uncompressed_total)
+
+	@cached_property
+	def headerless_crc(self):
+		self._databuf.seek(self.metadata_header_size)
+		uncompressed_total = sum([c.decompressed_size for c in self.chunk_info])
+		data_total = uncompressed_total - self.metadata_header_size
+		return stream_crc32(self._databuf, data_total)
 
 	def read_compressed_data(self, buf, compression):
 		data = buf.read(self.ciblock_size)
