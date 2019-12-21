@@ -112,3 +112,25 @@ class BinaryReader:
 
 	def read_int64(self) -> int:
 		return struct.unpack(self.endian + "q", self.read(8))[0]
+
+
+class OffsetReader(BinaryReader):
+	"""
+	Create a BinaryReader class that records the current offset of buf,
+	and treats this offset as the new SEEK_SET position, translating
+	seek() and tell() requests as appropriate.
+	"""
+	def __init__(self, buf, endian=">"):
+		super().__init__(buf, endian)
+		self._offset = buf.tell()
+
+	def seek(self, offset, whence=0):
+		if whence == 0:
+			self.buf.seek(offset + self._offset, whence)
+		else:
+			# SEEK_CUR: This is just a DX, it relays as-is
+			# SEEK_END: This is a DX from the end, which has no Adjustment.
+			self.buk.seek(offset, whence)
+
+	def tell(self):
+		return self.buf.tell() - self._offset
