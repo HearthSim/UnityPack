@@ -1,7 +1,21 @@
 # UnityPack
-[![Build Status](https://api.travis-ci.org/HearthSim/UnityPack.svg?branch=master)](https://travis-ci.org/HearthSim/UnityPack)
 
 A library to deserialize Unity3D Assets and AssetBundles files (*.unity3d).
+
+## Fork Information
+
+This is a friendly fork of UnityPack to ease packaging for the Malie
+project. It contains fixes not yet upstreamed for UnityPack. The
+original author of UnityPack is Jerome LeClanche. Please do not seek
+support from the original author for patches introduced in this
+version, but please do contribute patches directly to the original
+project whenever possible.
+
+The base project is version 0.9.0. This fork will use versions
+starting at 0.9.1a0 to indicate a pre-release alpha for UnityPack
+0.9.1, indicating my hope to upstream these patches. This fork will
+release NO non-alpha versions to avoid interfering with the core
+project's versioning scheme.
 
 ## Dependencies
 
