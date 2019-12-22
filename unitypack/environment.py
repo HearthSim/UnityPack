@@ -7,8 +7,9 @@ from .assetbundle import AssetBundle
 
 class UnityEnvironment:
 	def __init__(self, base_path=""):
-		self.bundles = {}
+		self.bundles = []
 		self.assets = {}
+		self.asset_mapping = {}
 		self.base_path = base_path
 		self.files = []
 
@@ -20,18 +21,20 @@ class UnityEnvironment:
 		return "%s(base_path=%r)" % (self.__class__.__name__, self.base_path)
 
 	def load(self, file):
-		for bundle in self.bundles.values():
+		for bundle in self.bundles:
 			if os.path.abspath(file.name) == os.path.abspath(bundle.path):
 				return bundle
 		ret = AssetBundle(self)
 		ret.load(file)
-		self.bundles[ret.name.lower()] = ret
+		self.bundles.append(ret)
 		for asset in ret.assets:
-			self.assets[asset.name.lower()] = asset
+			name = asset.name.lower()
+			self.assets[name] = asset
+			self.asset_mapping[name] = ret
 		return ret
 
 	def discover(self, name):
-		for bundle in list(self.bundles.values()):
+		for bundle in self.bundles:
 			dirname = os.path.dirname(os.path.abspath(bundle.path))
 			for filename in os.listdir(dirname):
 				basename = os.path.splitext(os.path.basename(filename))[0]
@@ -55,7 +58,7 @@ class UnityEnvironment:
 		return self.assets[name]
 
 	def populate_assets(self):
-		for bundle in self.bundles.values():
+		for bundle in self.bundles:
 			for asset in bundle.assets:
 				asset_name = asset.name.lower()
 				if asset_name not in self.assets:
@@ -71,14 +74,14 @@ class UnityEnvironment:
 		else:
 			raise NotImplementedError("Unsupported scheme: %r" % (u.scheme))
 
-		if archive not in self.bundles:
+		if archive not in self.asset_mapping:
 			self.discover(archive)
 
 			# Still didn't find it? Give up...
-			if archive not in self.bundles:
-				raise NotImplementedError("Cannot find %r in %r" % (archive, self.bundles))
+			if archive not in self.asset_mapping:
+				raise NotImplementedError("Cannot find %r in %r" % (archive, self.asset_mapping))
 
-		bundle = self.bundles[archive]
+		bundle = self.asset_mapping[archive]
 
 		for asset in bundle.assets:
 			if asset.name.lower() == name:

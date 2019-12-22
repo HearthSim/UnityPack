@@ -18,8 +18,6 @@ class AssetBundle:
 		self.assets = []
 
 	def __repr__(self):
-		if hasattr(self, "name"):
-			return "<%s %r>" % (self.__class__.__name__, self.name)
 		return "<%s>" % (self.__class__.__name__)
 
 	@property
@@ -131,9 +129,6 @@ class AssetBundle:
 			asset = Asset.from_bundle(self, storage)
 			asset.name = name
 			self.assets.append(asset)
-
-		# Hacky
-		self.name = self.assets[0].name
 
 
 class ArchiveBlockInfo:
