@@ -177,7 +177,7 @@ class Texture2D(Texture):
 	read_allowed = field("m_ReadAllowed")
 	format = field("m_TextureFormat", TextureFormat)
 	texture_dimension = field("m_TextureDimension")
-	mipmap = field("m_MipMap")
+	mip_count = field("m_MipCount")
 	complete_image_size = field("m_CompleteImageSize")
 	stream_data = field("m_StreamData", default=False)
 
