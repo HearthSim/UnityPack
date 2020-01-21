@@ -142,6 +142,14 @@ class ObjectInfo:
 				first = self.read_value(type.children[0], buf)
 				second = self.read_value(type.children[1], buf)
 				result = (first, second)
+			elif t.startswith("ExposedReference"):
+				exposed_ref = ExposedReferenceInfo(self.asset)
+				result = OrderedDict()
+
+				for child in type.children:
+					result[child.name] = exposed_ref.read_value(child, buf)
+
+				result = load_object(type, result)
 			else:
 				result = OrderedDict()
 
@@ -169,6 +177,16 @@ class ObjectInfo:
 	def resolve_streaming_asset(self, path):
 		if len(path) > 0:
 			return self.asset.get_asset(path)
+
+
+class ExposedReferenceInfo(ObjectInfo):
+
+	def read_value(self, type, buf):
+		if type.name == "exposedName":
+			buf.read_uint()
+			return ""
+		else:
+			return super().read_value(type, buf)
 
 
 class ObjectPointer:
