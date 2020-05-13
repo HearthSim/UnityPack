@@ -213,11 +213,17 @@ class ObjectPointer:
 
 	@property
 	def object(self):
-		return self.asset.objects[self.path_id]
+		asset = self.asset
+		if asset is None:
+			return None
+		return asset.objects[self.path_id]
 
 	def load(self, buf):
 		self.file_id = buf.read_int()
 		self.path_id = self.source_asset.read_id(buf)
 
 	def resolve(self):
-		return self.object.read()
+		obj = self.object
+		if obj is None:
+			return None
+		return obj.read()

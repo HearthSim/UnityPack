@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 from .asset import Asset
 from .assetbundle import AssetBundle
+from .exceptions import ArchiveNotFound
 
 
 class UnityEnvironment:
@@ -76,7 +77,7 @@ class UnityEnvironment:
 
 			# Still didn't find it? Give up...
 			if archive not in self.bundles:
-				raise NotImplementedError("Cannot find %r in %r" % (archive, self.bundles))
+				raise ArchiveNotFound("Cannot find %r in %r" % (archive, self.bundles))
 
 		bundle = self.bundles[archive]
 

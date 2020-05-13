@@ -5,9 +5,12 @@ from binascii import hexlify
 from io import BytesIO
 from uuid import UUID
 
+from .exceptions import ArchiveNotFound
 from .object import ObjectInfo
 from .type import TypeMetadata
 from .utils import BinaryReader
+
+logger = logging.getLogger(__name__)
 
 
 class Asset:
@@ -58,9 +61,13 @@ class Asset:
 		return ret
 
 	def get_asset(self, path):
-		if ":" in path:
-			return self.environment.get_asset(path)
-		return self.environment.get_asset_by_filename(path)
+		try:
+			if ":" in path:
+				return self.environment.get_asset(path)
+			return self.environment.get_asset_by_filename(path)
+		except ArchiveNotFound as e:
+			logger.warning(str(e))
+			return None
 
 	def __init__(self):
 		self._buf_ofs = None
@@ -153,7 +160,7 @@ class Asset:
 			if obj.class_id in trees:
 				self.types[obj.type_id] = trees[obj.class_id]
 			else:
-				logging.warning("%r absent from structs.dat", obj.class_id)
+				logger.warning("%r absent from structs.dat", obj.class_id)
 				self.types[obj.type_id] = None
 
 		if obj.path_id in self._objects:
