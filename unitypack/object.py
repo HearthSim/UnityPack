@@ -114,7 +114,10 @@ class ObjectInfo:
 			buf.align()
 			result = buf.read_double()
 		elif t == "string":
-			size = buf.read_uint()
+			if type.size == -1:
+				size = buf.read_uint()
+			else:
+				size = type.size
 			result = buf.read_string(size)
 			align = type.children[0].post_align
 		else:
