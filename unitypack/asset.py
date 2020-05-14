@@ -13,6 +13,9 @@ from .utils import BinaryReader
 logger = logging.getLogger(__name__)
 
 
+LIBRARY_UNITY_DEFAULT_RESOURCES = "library/unity default resources"
+
+
 class Asset:
 	@classmethod
 	def from_bundle(cls, bundle, buf):
@@ -64,6 +67,11 @@ class Asset:
 		try:
 			if ":" in path:
 				return self.environment.get_asset(path)
+			elif path == LIBRARY_UNITY_DEFAULT_RESOURCES:
+				logger.warning("Refusing to load " + LIBRARY_UNITY_DEFAULT_RESOURCES)
+				raise NotImplementedError(
+					LIBRARY_UNITY_DEFAULT_RESOURCES + " cannot be loaded"
+				)
 			return self.environment.get_asset_by_filename(path)
 		except ArchiveNotFound as e:
 			logger.warning(str(e))
