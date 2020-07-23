@@ -151,6 +151,9 @@ class TypeMetadata:
 					tree.load(buf)
 					self.type_trees[class_id] = tree
 
+				if format >= 21:
+					unk1 = buf.read(4)
+
 		else:
 			num_fields = buf.read_int()
 			for i in range(num_fields):
