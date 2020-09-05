@@ -1,4 +1,5 @@
 import pkg_resources
+from os.path import dirname
 
 
 __version__ = pkg_resources.require("unitypack")[0].version
@@ -8,7 +9,7 @@ def load(file, env=None):
 	from .environment import UnityEnvironment
 
 	if env is None:
-		env = UnityEnvironment()
+		env = UnityEnvironment(dirname(file.name))
 	return env.load(file)
 
 
@@ -16,5 +17,5 @@ def load_from_file(file, env=None):
 	from .environment import UnityEnvironment
 
 	if env is None:
-		env = UnityEnvironment()
+		env = UnityEnvironment(dirname(file.name))
 	return env.get_asset_by_filename(file)

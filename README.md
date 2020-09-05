@@ -22,6 +22,9 @@ field or TextAsset's `m_Script` field. Using this, files can be "extracted" from
 bundles by using their `m_Name` and an appropriate extension. But doing so leaves out all
 the "unextractable" classes which one might want to deal with.
 
+**Note:** Unity3D files may sometimes reference external files. By default UnityPack will
+look for these files in the same directory as the Unity3D file.
+
 
 ## Usage
 
