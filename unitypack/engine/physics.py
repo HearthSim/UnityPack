@@ -14,6 +14,23 @@ class BoxCollider(Collider):
 	size = field("m_Size")
 
 
+class SphereCollider(Collider):
+	center = field("m_Center")
+	radius = field("m_Radius")
+
+
+class CapsuleCollider(SphereCollider):
+	height = field("m_Height")
+	direction = field("m_Direction")
+
+
+class MeshCollider(Collider):
+	convex = field("m_Convex", bool)
+	cooking_options = field("m_CookingOptions")
+	skin_width = field("m_SkinWidth")
+	mesh = field("m_Mesh")
+
+
 class Collider2D(Behaviour):
 	is_trigger = field("m_IsTrigger")
 	material = field("m_Material")
