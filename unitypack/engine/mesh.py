@@ -39,4 +39,4 @@ class VertexData(Object):
 
 
 class MeshFilter(Component):
-	pass
+	mesh = field("m_Mesh")
