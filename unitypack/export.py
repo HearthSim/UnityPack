@@ -28,7 +28,7 @@ class OBJVector3(OBJVector2):
 		return self
 
 	def __str__(self):
-		return "%s %s %s" % (-self.x, self.y, self.z)
+		return "%s %s %s" % (self.x, self.y, self.z)
 
 
 class OBJVector4(OBJVector3):
@@ -147,7 +147,7 @@ class OBJMesh:
 	@staticmethod
 	def face_str(indices, coords, normals):
 		ret = ["f "]
-		for i in indices[::-1]:
+		for i in indices:
 			ret.append(str(i + 1))
 			if coords or normals:
 				ret.append("/")
