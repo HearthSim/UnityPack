@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 454576840
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: ae5ad6387bb316cd93b359f260b990ce
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 3f7d0c5e0986ec71841622bcb2f9be1c
+HashAppended: 0
+ClassTypes:
+- Class: 83
+  Script: {instanceID: 0}
+Assets:
+- Assets/Bruh - Sound Effect (HD) [D2_r4q2imnQ].mp3
+- Assets/Bruh - Sound Effect (HD) [D2_r4q2imnQ].wav
+Dependencies: []

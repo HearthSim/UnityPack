@@ -29,6 +29,15 @@ If you need to modify it or amend it in some way, you should always appropriatel
 Also see: [Github Help: Using Pull Requests](https://help.github.com/articles/using-pull-requests/)
 
 
+### Running Tests
+
+To run unit tests, simply run:
+
+```bash
+python3 -m unittest discover
+```
+
+
 ### Need help?
 
 You can always ask for help in our IRC channel, `#Hearthsim` on [Freenode](https://freenode.net/).
